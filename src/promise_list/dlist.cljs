@@ -2,7 +2,6 @@
   (:use [event-thread.test :only [test]]
         [jayq.util :only [log]])
   (:require [event-thread.dcell :as dc]
-            [event-thread.cell :as c]
             [jayq.core :as jq]))
 
 (defn dlist [& values]
@@ -17,8 +16,8 @@
 
 (defn produce [productive-dlist value]
   (let [current-tail (deref productive-dlist)
-        next-tail (dc/deferred)
-        tail-cell (c/cell value next-tail)]
+        next-tail (dc/DCell. (dc/deferred))
+        tail-cell (cons value next-tail)]
     (dc/resolve current-tail tail-cell)
     (reset! productive-dlist next-tail)))
 
@@ -30,11 +29,11 @@
 
 (defn close [productive-dlist]
   (let [current-tail (deref productive-dlist)]
-    (dc/resolve current-tail (c/end-cell nil current-tail))))
+    (dc/resolve current-tail nil)))
 
 (log "close")
 (let [writer (productive-dlist)
       reader (deref writer)]
-  (dc/done reader (fn [v] (test true (c/end-cell? v))))
+  (dc/done reader (fn [v] (test true (empty? v))))
   (close writer))
 

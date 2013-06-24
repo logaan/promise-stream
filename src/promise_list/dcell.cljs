@@ -3,8 +3,7 @@
   (:refer-clojure :exclude [cons])
   (:use [event-thread.test :only [test]]
         [jayq.util :only [log]])
-  (:require [jayq.core :as jq]
-            [event-thread.cell :as c]))
+  (:require [jayq.core :as jq]))
 
 (defn deferred
   ([] (jq/$deferred))
@@ -17,7 +16,7 @@
   but no tail yet. Two arguments is a complete cell with value and tail."
   ([] (DCell. (deferred nil)))
   ([f] (dcell f (DCell. (deferred))))
-  ([f r] (DCell. (deferred (c/cell f r)))))
+  ([f r] (DCell. (deferred (cljs.core/cons f r)))))
 
 (defn done [dcell callback]
   (jq/done (:deferred-wrapping-cell dcell) callback))
@@ -35,15 +34,16 @@
   (-first [dcell]
     (let [first-deferred (deferred)]
       (done dcell (fn [cell]
-        (jq/resolve first-deferred (c/first cell))))
+        (jq/resolve first-deferred (first cell))))
       first-deferred))
   (-rest [dcell]
     (let [rest-deferred (deferred)]
       (done dcell (fn [cell]
-        (if-let [tail (c/rest cell)]
-          (done (c/rest cell) (fn [rest-cell]
-            (jq/resolve rest-deferred rest-cell)))
-          (jq/resolve rest-deferred nil))))
+        (let [tail (rest cell)]
+          (if (empty? tail)
+            (jq/resolve rest-deferred nil)
+            (done (rest cell) (fn [rest-cell]
+                                (jq/resolve rest-deferred rest-cell)))))))
       (DCell. rest-deferred))))
 
 (log "first")
@@ -65,8 +65,8 @@
 ; When you wait for the value you get a cell not a dcell.
 (let [dlist (cons 1 (cons 2 (cons 3 (dcell))))]
   (done (rest dlist) (fn [two-onwards]
-    (done (c/rest two-onwards) (fn [three-onwards]
-      (test 3 (c/first three-onwards)))))))
+    (done (rest two-onwards) (fn [three-onwards]
+      (test 3 (first three-onwards)))))))
 
 (let [dlist            (cons 1 (dcell))
       list-beyond-end  (rest (rest dlist))
