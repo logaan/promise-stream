@@ -5,7 +5,7 @@
             [jayq.core :as jq]))
 
 (defn dlist [& values]
-  (reduce (fn [coll v] (dc/cons v coll)) (dc/dcell) values))
+  (reduce (fn [coll v] (dc/dcell v coll)) (dc/dcell) values))
 
 (log "dlist")
 (jq/done (first (rest (dlist 1 2 3))) (fn [f]

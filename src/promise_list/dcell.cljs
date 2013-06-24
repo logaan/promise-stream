@@ -1,6 +1,5 @@
 ; A dcell is always wrapped in a deferred
 (ns promise-list.dcell
-  (:refer-clojure :exclude [cons])
   (:use [promise-list.test :only [test]]
         [jayq.util :only [log]])
   (:require [jayq.core :as jq]))
@@ -16,18 +15,13 @@
   but no tail yet. Two arguments is a complete cell with value and tail."
   ([] (DCell. (deferred nil)))
   ([f] (dcell f (DCell. (deferred))))
-  ([f r] (DCell. (deferred (cljs.core/cons f r)))))
+  ([f r] (DCell. (deferred (cons f r)))))
 
 (defn done [dcell callback]
   (jq/done (:deferred-wrapping-cell dcell) callback))
 
 (defn resolve [dcell callback]
   (jq/resolve (:deferred-wrapping-cell dcell) callback))
-
-(log "dcell")
-(done (dcell)           (fn [v] (test true  (empty? v))))
-(done (dcell 2)         (fn [v] (test false (empty? v))))
-(done (dcell 2 (dcell)) (fn [v] (test false (empty? v))))
 
 (extend-type DCell
   ISeq
@@ -54,21 +48,24 @@
       deferred-second (first (rest dlist))]
   (jq/done deferred-second (partial test 2)))
 
-(defn cons [value coll]
-  (dcell value coll))
 
-(log "cons")
-(let [dlist (cons 1 (cons 2 (cons 3 (dcell))))
+(log "dcell")
+
+(done (dcell)           (fn [v] (test true  (empty? v))))
+(done (dcell 2)         (fn [v] (test false (empty? v))))
+(done (dcell 2 (dcell)) (fn [v] (test false (empty? v))))
+
+(let [dlist (dcell 1 (dcell 2 (dcell 3 (dcell))))
       deferred-third (first (rest (rest dlist)))]
   (jq/done deferred-third (partial test 3)))
 
 ; When you wait for the value you get a cell not a dcell.
-(let [dlist (cons 1 (cons 2 (cons 3 (dcell))))]
+(let [dlist (dcell 1 (dcell 2 (dcell 3 (dcell))))]
   (done (rest dlist) (fn [two-onwards]
     (done (rest two-onwards) (fn [three-onwards]
       (test 3 (first three-onwards)))))))
 
-(let [dlist            (cons 1 (dcell))
+(let [dlist            (dcell 1 (dcell))
       list-beyond-end  (rest (rest dlist))
       value-beyond-end (first list-beyond-end)]
   (done    list-beyond-end  (fn [v] (test true (empty? v))))
