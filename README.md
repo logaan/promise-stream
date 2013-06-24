@@ -8,8 +8,8 @@ code may not block and so an asynchronous alternative is required.
 Accessing the second item from a pre-populated dlist.
 
 ```clojure
-(jq/done (dc/first (dc/rest (dlist 1 2 3))) (fn [f]
-  (test 2 f)))
+(jayq.core/done (first (rest (dlist 1 2 3)))
+  (fn [v] (assert (= 2 v)))
 ```
 
 Using productive-dlist we can write to the tail of a dlist. Code that operates
@@ -18,7 +18,7 @@ on a value can be registered before that value has been added to the sequence.
 ```clojure
 (let [writer (productive-dlist)
       reader (deref writer)]
-  (jq/done (dc/first reader) (fn [v] (test 1 v)))
+  (jayq.core/done (first reader) (fn [v] (assert (= 1 v))))
   (produce writer 1))
 ```
 
