@@ -9,7 +9,7 @@
   (reduce (fn [coll v] (dc/cons v coll)) (dc/dcell) values))
 
 (log "dlist")
-(jq/done (dc/first (dc/rest (dlist 1 2 3))) (fn [f]
+(jq/done (first (rest (dlist 1 2 3))) (fn [f]
   (test 2 f)))
 
 (defn productive-dlist []
@@ -25,7 +25,7 @@
 (log "produce")
 (let [writer (productive-dlist)
       reader (deref writer)]
-  (jq/done (dc/first reader) (fn [v] (test 1 v)))
+  (jq/done (first reader) (fn [v] (test 1 v)))
   (produce writer 1))
 
 (defn close [productive-dlist]

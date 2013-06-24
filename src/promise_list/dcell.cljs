@@ -1,6 +1,6 @@
 ; A dcell is always wrapped in a deferred
 (ns event-thread.dcell
-  (:refer-clojure :exclude [first rest cons])
+  (:refer-clojure :exclude [cons])
   (:use [event-thread.test :only [test]]
         [jayq.util :only [log]])
   (:require [jayq.core :as jq]
@@ -34,24 +34,22 @@
 (done (dcell 2)         (fn [v] (test false (c/end-cell? v))))
 (done (dcell 2 (dcell)) (fn [v] (test false (c/end-cell? v))))
 
-(defn first [dcell]
-  (let [first-deferred (deferred)]
-    (done dcell (fn [cell]
-      (jq/resolve first-deferred (c/first cell))))
-    first-deferred))
+(extend-type DCell
+  ISeq
+  (-first [dcell]
+    (let [first-deferred (deferred)]
+      (done dcell (fn [cell]
+        (jq/resolve first-deferred (c/first cell))))
+      first-deferred))
+  (-rest [dcell]
+    (let [rest-deferred (deferred)]
+      (done dcell (fn [cell]
+        (done (c/rest cell) (fn [rest-cell]
+          (jq/resolve rest-deferred rest-cell)))))
+      (DCell. rest-deferred))))
 
 (log "first")
 (jq/done (first (dcell 1)) (fn [f] (test 1 f)))
-
-; The problem with this is that rest returns a future with a cell rather than a
-; cell directly. But perhaps that's un-nessisary... because a cell is already
-; wrapped in a future.
-(defn rest [dcell]
-  (let [rest-deferred (deferred)]
-    (done dcell (fn [cell]
-      (done (c/rest cell) (fn [rest-cell]
-        (jq/resolve rest-deferred rest-cell)))))
-    (DCell. rest-deferred)))
 
 (log "rest")
 (let [dlist (dcell 1 (dcell 2 (dcell)))
