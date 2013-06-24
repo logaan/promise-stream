@@ -2,13 +2,13 @@
   (:require [promise-list.dcell :as dc]))
 
 (defn dlist [& values]
-  (reduce (fn [coll v] (dc/dcell v coll)) (dc/dcell) values))
+  (reduce (fn [coll v] (dc/dcell v coll)) (dc/closed-cell) values))
 
 (defn productive-dlist []
-  (atom (dc/container)))
+  (atom (dc/open-container)))
 
 (defn produce [productive-dlist value]
-  (let [next-tail (dc/container)
+  (let [next-tail (dc/open-container)
         tail-cell (cons value next-tail)]
     (dc/resolve (deref productive-dlist) tail-cell)
     (reset! productive-dlist next-tail)))
