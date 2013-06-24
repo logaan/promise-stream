@@ -15,11 +15,7 @@
 (defn dcell
   "No arguments gives an empty end cell. One argument is a cell with a value
   but no tail yet. Two arguments is a complete cell with value and tail."
-  ([]
-   (let [self-deferred (deferred)
-         new-cell      (c/end-cell nil (DCell. self-deferred))]
-     (jq/resolve self-deferred new-cell)
-     (DCell. self-deferred)))
+  ([] (DCell. (deferred nil)))
   ([f] (dcell f (DCell. (deferred))))
   ([f r] (DCell. (deferred (c/cell f r)))))
 
@@ -30,9 +26,9 @@
   (jq/resolve (:deferred-wrapping-cell dcell) callback))
 
 (log "dcell")
-(done (dcell)           (fn [v] (test true  (c/end-cell? v))))
-(done (dcell 2)         (fn [v] (test false (c/end-cell? v))))
-(done (dcell 2 (dcell)) (fn [v] (test false (c/end-cell? v))))
+(done (dcell)           (fn [v] (test true  (empty? v))))
+(done (dcell 2)         (fn [v] (test false (empty? v))))
+(done (dcell 2 (dcell)) (fn [v] (test false (empty? v))))
 
 (extend-type DCell
   ISeq
@@ -44,8 +40,10 @@
   (-rest [dcell]
     (let [rest-deferred (deferred)]
       (done dcell (fn [cell]
-        (done (c/rest cell) (fn [rest-cell]
-          (jq/resolve rest-deferred rest-cell)))))
+        (if-let [tail (c/rest cell)]
+          (done (c/rest cell) (fn [rest-cell]
+            (jq/resolve rest-deferred rest-cell)))
+          (jq/resolve rest-deferred nil))))
       (DCell. rest-deferred))))
 
 (log "first")
@@ -73,6 +71,6 @@
 (let [dlist            (cons 1 (dcell))
       list-beyond-end  (rest (rest dlist))
       value-beyond-end (first list-beyond-end)]
-  (done    list-beyond-end  (fn [v] (test true (c/end-cell? v))))
+  (done    list-beyond-end  (fn [v] (test true (empty? v))))
   (jq/done value-beyond-end (fn [v] (test nil v))))
 
