@@ -1,7 +1,7 @@
 ; A dcell is always wrapped in a deferred
-(ns event-thread.dcell
+(ns promise-list.dcell
   (:refer-clojure :exclude [cons])
-  (:use [event-thread.test :only [test]]
+  (:use [promise-list.test :only [test]]
         [jayq.util :only [log]])
   (:require [jayq.core :as jq]))
 

@@ -1,4 +1,4 @@
-(ns event-thread.test)
+(ns promise-list.test)
 
 (defn test [expected actual]
   (if (not (= expected actual))

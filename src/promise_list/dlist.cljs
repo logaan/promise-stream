@@ -1,7 +1,7 @@
-(ns event-thread.dlist
-  (:use [event-thread.test :only [test]]
+(ns promise-list.dlist
+  (:use [promise-list.test :only [test]]
         [jayq.util :only [log]])
-  (:require [event-thread.dcell :as dc]
+  (:require [promise-list.dcell :as dc]
             [jayq.core :as jq]))
 
 (defn dlist [& values]
