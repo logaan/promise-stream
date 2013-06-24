@@ -1,0 +1,3 @@
+#!/usr/bin/env sh
+
+screen lein trampoline cljsbuild repl-rhino
