@@ -2,7 +2,7 @@
   (:require [promise-list.dcell :as dc]))
 
 (defn dlist [& values]
-  (reduce (fn [coll v] (dc/dcell v coll)) (dc/closed-cell) values))
+  (reduce (fn [coll v] (dc/closed-cell v coll)) (dc/empty-cell) values))
 
 (defn productive-dlist []
   (atom (dc/open-container)))

@@ -7,20 +7,20 @@
 
 (defrecord DCell [deferred-wrapping-cell])
 
-(defn full-container [v]
+(defn closed-container [v]
   (DCell. (deferred v)))
 
 (defn open-container []
   (DCell. (deferred)))
 
-(defn closed-cell []
-  (full-container nil))
+(defn empty-cell []
+  (closed-container nil))
 
-(defn dcell
-  "No arguments gives an empty end cell. One argument is a cell with a value
-  but no tail yet. Two arguments is a complete cell with value and tail."
-  ([f]   (dcell f (open-container)))
-  ([f r] (full-container (cons f r))))
+(defn open-cell [v]
+  (closed-container (cons v (open-container))))
+
+(defn closed-cell [v1 v2]
+  (closed-container (cons v1 v2)))
 
 (defn done [dcell callback]
   (jq/done (:deferred-wrapping-cell dcell) callback))
