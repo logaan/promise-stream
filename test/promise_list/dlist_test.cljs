@@ -1,20 +1,19 @@
 (ns promise-list.dlist-test
-  (:use [promise-list.dlist :only [dlist productive-dlist produce close]])
+  (:use [promise-list.dlist :only [closed-dlist open-dlist append! close!]]
+        [jayq.util :only [log]])
   (:require [jayq.core :as jq]
             [promise-list.dcell :as dc]))
 
 ; dlist
-(jq/done (first (rest (dlist 1 2 3))) #(assert (= 2 %)))
+(jq/done (first (rest (closed-dlist 1 2 3))) #(assert (= 2 %)))
 
-; produce
-(let [writer (productive-dlist)
-      reader (deref writer)]
+; append!
+(let [[reader writer] (open-dlist)]
   (jq/done (first reader) (fn [v] #(assert (= 1 %))))
-  (produce writer 1))
+  (append! writer 1))
 
-; close
-(let [writer (productive-dlist)
-      reader (deref writer)]
+; close!
+(let [[reader writer] (open-dlist)]
   (dc/done reader #(assert (empty? %)))
-  (close writer))
+  (close! writer))
 
