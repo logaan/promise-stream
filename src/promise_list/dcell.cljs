@@ -43,5 +43,14 @@
             (jq/resolve rest-deferred nil)
             (done (rest cell) (fn [rest-cell]
                                 (jq/resolve rest-deferred rest-cell)))))))
-      (DCell. rest-deferred))))
+      (DCell. rest-deferred)))
+  
+  ISeqable
+  (-seq [this] this))
 
+(defn dapply [f]
+  (fn [d]
+    (let [new-d (jq/$deferred)]
+      (jq/done d (fn [v]
+        (jq/resolve new-d (f v))))
+      new-d)))

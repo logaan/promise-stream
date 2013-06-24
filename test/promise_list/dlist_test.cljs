@@ -17,3 +17,10 @@
   (dc/done reader #(assert (empty? %)))
   (close! writer))
 
+; HOFs
+(->> (closed-dlist 1 2 3)
+     (map (dc/dapply inc))
+     (map (dc/dapply #(assert (#{2 3 4} %))))
+     (take 3)
+     doall)
+

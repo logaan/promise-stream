@@ -20,4 +20,3 @@
 
 (defn close! [writer]
   (dc/resolve (deref writer) nil))
-
