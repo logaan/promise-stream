@@ -8,13 +8,11 @@
   (atom (dc/container)))
 
 (defn produce [productive-dlist value]
-  (let [current-tail (deref productive-dlist)
-        next-tail (dc/container)
+  (let [next-tail (dc/container)
         tail-cell (cons value next-tail)]
-    (dc/resolve current-tail tail-cell)
+    (dc/resolve (deref productive-dlist) tail-cell)
     (reset! productive-dlist next-tail)))
 
 (defn close [productive-dlist]
-  (let [current-tail (deref productive-dlist)]
-    (dc/resolve current-tail nil)))
+  (dc/resolve (deref productive-dlist) nil))
 
