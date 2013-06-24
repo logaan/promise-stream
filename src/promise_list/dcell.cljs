@@ -1,7 +1,4 @@
-; A dcell is always wrapped in a deferred
 (ns promise-list.dcell
-  (:use [promise-list.test :only [test]]
-        [jayq.util :only [log]])
   (:require [jayq.core :as jq]))
 
 (defn deferred
@@ -39,35 +36,4 @@
             (done (rest cell) (fn [rest-cell]
                                 (jq/resolve rest-deferred rest-cell)))))))
       (DCell. rest-deferred))))
-
-(log "first")
-(jq/done (first (dcell 1)) (fn [f] (test 1 f)))
-
-(log "rest")
-(let [dlist (dcell 1 (dcell 2 (dcell)))
-      deferred-second (first (rest dlist))]
-  (jq/done deferred-second (partial test 2)))
-
-
-(log "dcell")
-
-(done (dcell)           (fn [v] (test true  (empty? v))))
-(done (dcell 2)         (fn [v] (test false (empty? v))))
-(done (dcell 2 (dcell)) (fn [v] (test false (empty? v))))
-
-(let [dlist (dcell 1 (dcell 2 (dcell 3 (dcell))))
-      deferred-third (first (rest (rest dlist)))]
-  (jq/done deferred-third (partial test 3)))
-
-; When you wait for the value you get a cell not a dcell.
-(let [dlist (dcell 1 (dcell 2 (dcell 3 (dcell))))]
-  (done (rest dlist) (fn [two-onwards]
-    (done (rest two-onwards) (fn [three-onwards]
-      (test 3 (first three-onwards)))))))
-
-(let [dlist            (dcell 1 (dcell))
-      list-beyond-end  (rest (rest dlist))
-      value-beyond-end (first list-beyond-end)]
-  (done    list-beyond-end  (fn [v] (test true (empty? v))))
-  (jq/done value-beyond-end (fn [v] (test nil v))))
 

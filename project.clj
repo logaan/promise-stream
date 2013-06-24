@@ -7,7 +7,7 @@
                  [jayq "2.3.0"]]
   :plugins [[lein-cljsbuild "0.3.0"]] 
   :cljsbuild {
-    :builds [{:source-paths ["src"]
+    :builds [{:source-paths ["src" "test"]
               :compiler {:output-to "resources/public/js/main.js"
                          :optimizations :whitespace
                          :pretty-print true}}]})
