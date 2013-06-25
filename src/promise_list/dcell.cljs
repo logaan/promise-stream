@@ -60,3 +60,13 @@
       (jq/done d (fn [v]
         (jq/resolve new-d (f v))))
       new-d)))
+
+(defn dreduce
+  ([f seed coll]
+   (let [return (jq/$deferred)]
+     (dreduce return f seed coll)
+     return))
+  ([return f seed coll] (dc/done coll (fn [cell]
+    (if (empty? cell)
+      (jq/resolve return seed)
+      (dreduce return f (f seed (first cell)) (rest cell)))))))

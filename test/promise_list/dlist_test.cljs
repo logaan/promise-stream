@@ -24,3 +24,5 @@
      (take 3)
      doall)
 
+(jq/done (dreduce + 0 (closed-dlist 1 2)) #(assert (= 3 %)))
+
