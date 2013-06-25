@@ -22,6 +22,12 @@ on a value can be registered before that value has been added to the sequence.
   (produce writer 1))
 ```
 
+
+## Roadmap
+
+* Make sure that deferred objects aren't leaked. Instead expose promise
+  objects. Only keep the original deferred object for open seqs.
+
 ## License
 
 Copyright © 2013 Logan Campbell
