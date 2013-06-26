@@ -1,28 +1,28 @@
-(ns promise-list.dlist-test
-  (:use [promise-list.dlist :only [closed-dlist open-dlist append! close! reduce*]]
+(ns promise-list.plist-test
+  (:use [promise-list.plist :only [closed-plist open-plist append! close! reduce*]]
         [jayq.util :only [log]])
   (:require [jayq.core :as jq]
-            [promise-list.dcell :as dc]))
+            [promise-list.pcell :as pc]))
 
-; dlist
-(jq/done (first (rest (closed-dlist 1 2 3))) #(assert (= 2 %)))
+; plist
+(jq/done (first (rest (closed-plist 1 2 3))) #(assert (= 2 %)))
 
 ; append!
-(let [[reader writer] (open-dlist)]
+(let [[reader writer] (open-plist)]
   (jq/done (first reader) (fn [v] #(assert (= 1 %))))
   (append! writer 1))
 
 ; close!
-(let [[reader writer] (open-dlist)]
-  (dc/done reader #(assert (empty? %)))
+(let [[reader writer] (open-plist)]
+  (pc/done reader #(assert (empty? %)))
   (close! writer))
 
 ; HOFs
-(->> (closed-dlist 1 2 3)
-     (map (dc/dapply inc))
-     (map (dc/dapply #(assert (#{2 3 4} %))))
+(->> (closed-plist 1 2 3)
+     (map (pc/dapply inc))
+     (map (pc/dapply #(assert (#{2 3 4} %))))
      (take 3)
      doall)
 
-(jq/done (reduce* + 0 (closed-dlist 1 2)) #(assert (= 3 %)))
+(jq/done (reduce* + 0 (closed-plist 1 2)) #(assert (= 3 %)))
 
