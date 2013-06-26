@@ -5,17 +5,16 @@
 (ns promise-list.dcell
   (:require [jayq.core :as jq]))
 
-(defn deferred
-  ([] (jq/$deferred))
-  ([value] (jq/resolve (deferred) value)))
+(defn promise [value]
+  (jq/promise (jq/resolve (jq/$deferred) value)))
 
 (defrecord DCell [deferred-wrapping-cell])
 
 (defn closed-container [v]
-  (DCell. (deferred v)))
+  (DCell. (promise v)))
 
 (defn open-container []
-  (DCell. (deferred)))
+  (DCell. (jq/$deferred)))
 
 (defn empty-cell []
   (closed-container nil))
@@ -35,19 +34,19 @@
 (extend-type DCell
   ISeq
   (-first [dcell]
-    (let [first-deferred (deferred)]
+    (let [first-deferred (jq/$deferred)]
       (done dcell (fn [cell]
         (jq/resolve first-deferred (first cell))))
-      first-deferred))
+      (jq/promise first-deferred)))
   (-rest [dcell]
-    (let [rest-deferred (deferred)]
+    (let [rest-deferred (jq/$deferred)]
       (done dcell (fn [cell]
         (let [tail (rest cell)]
           (if (empty? tail)
             (jq/resolve rest-deferred nil)
             (done (rest cell) (fn [rest-cell]
                                 (jq/resolve rest-deferred rest-cell)))))))
-      (DCell. rest-deferred)))
+      (DCell. (jq/promise rest-deferred))))
   
   ISeqable
   (-seq [this] this))
@@ -59,4 +58,4 @@
     (let [new-d (jq/$deferred)]
       (jq/done d (fn [v]
         (jq/resolve new-d (f v))))
-      new-d)))
+      (jq/promise new-d))))
