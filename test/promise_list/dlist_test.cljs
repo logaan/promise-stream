@@ -1,5 +1,5 @@
 (ns promise-list.dlist-test
-  (:use [promise-list.dlist :only [closed-dlist open-dlist append! close!]]
+  (:use [promise-list.dlist :only [closed-dlist open-dlist append! close! dreduce]]
         [jayq.util :only [log]])
   (:require [jayq.core :as jq]
             [promise-list.dcell :as dc]))

@@ -1,6 +1,6 @@
 (ns promise-list.dlist
-  (:use [jayq.util :only [log]]) 
-  (:require [promise-list.dcell :as dc]))
+  (:require [promise-list.dcell :as dc]
+            [jayq.core :as jq]))
 
 (defn closed-dlist [& values]
   (reduce #(dc/closed-cell %2 %1) (dc/empty-cell) values))
@@ -20,3 +20,13 @@
 
 (defn close! [writer]
   (dc/resolve (deref writer) nil))
+
+(defn dreduce
+  ([f seed coll]
+   (let [return (jq/$deferred)]
+     (dreduce return f seed coll)
+     return))
+  ([return f seed coll] (dc/done coll (fn [cell]
+    (if (empty? cell)
+      (jq/resolve return seed)
+      (dreduce return f (f seed (first cell)) (rest cell)))))))
