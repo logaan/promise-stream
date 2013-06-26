@@ -1,5 +1,5 @@
 (ns promise-list.dlist-test
-  (:use [promise-list.dlist :only [closed-dlist open-dlist append! close! dreduce]]
+  (:use [promise-list.dlist :only [closed-dlist open-dlist append! close! reduce*]]
         [jayq.util :only [log]])
   (:require [jayq.core :as jq]
             [promise-list.dcell :as dc]))
@@ -24,5 +24,5 @@
      (take 3)
      doall)
 
-(jq/done (dreduce + 0 (closed-dlist 1 2)) #(assert (= 3 %)))
+(jq/done (reduce* + 0 (closed-dlist 1 2)) #(assert (= 3 %)))
 
