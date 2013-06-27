@@ -2,7 +2,8 @@
   (:use [promise-list.dlist :only [closed-dlist open-dlist append! close! reduce*]]
         [jayq.util :only [log]])
   (:require [jayq.core :as jq]
-            [promise-list.dcell :as dc]))
+            [promise-list.dcell :as dc]
+            [clojure.core.reducers :as r]))
 
 ; dlist
 (jq/done (first (rest (closed-dlist 1 2 3))) #(assert (= 2 %)))
@@ -39,4 +40,9 @@
      doall)
 
 (jq/done (reduce* + 0 (closed-dlist 1 2)) #(assert (= 3 %)))
+
+(jq/done (r/reduce (dc/dapply +) (dc/deferred 0) (closed-dlist 1 2 3 4)) log)
+
+(doall (r/map (dc/dapply inc) (closed-dlist 1 2 3 4)))
+
 

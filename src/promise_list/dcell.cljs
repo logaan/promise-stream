@@ -9,7 +9,7 @@
   ([] (jq/$deferred))
   ([value] (jq/resolve (deferred) value)))
 
-(defrecord DCell [deferred-wrapping-cell])
+(deftype DCell [deferred-wrapping-cell])
 
 (defn closed-container [v]
   (DCell. (deferred v)))
@@ -27,10 +27,10 @@
   (closed-container (cons v1 v2)))
 
 (defn done [dcell callback]
-  (jq/done (:deferred-wrapping-cell dcell) callback))
+  (jq/done (.-deferred-wrapping-cell dcell) callback))
 
 (defn resolve [dcell value]
-  (jq/resolve (:deferred-wrapping-cell dcell) value))
+  (jq/resolve (.-deferred-wrapping-cell dcell) value))
 
 (extend-type DCell
   ISeq
@@ -55,8 +55,16 @@
 (defn dapply
   "fmap"
   [f]
-  (fn [d]
-    (let [new-d (jq/$deferred)]
-      (jq/done d (fn [v]
-        (jq/resolve new-d (f v))))
-      new-d)))
+  (fn
+    ([d]
+     (let [new-d (jq/$deferred)]
+       (jq/done d (fn [v]
+         (jq/resolve new-d (f v))))
+       new-d))
+    ([d1 d2]
+     (let [new-d (jq/$deferred)]
+       (jq/done d1 (fn [v1]
+         (jq/done d2 (fn [v2]
+           (jq/resolve new-d (f v1 v2))))))
+       new-d))))
+

@@ -23,6 +23,25 @@
     (reset! writer new-tail)
     writer))
 
+(defn dcell-reduce [deferred coll f daccumulator]
+  (let [dresult (f daccumulator (first coll))
+        dtail   (rest coll)]
+    (dc/done dtail (fn [tail]
+      (if (empty? tail)
+        (jq/done dresult (fn [result]
+          (jq/resolve deferred result)))
+        (dcell-reduce deferred dtail f dresult))))))
+
+(extend-type dc/DCell
+  IReduce
+  (-reduce
+    ([coll f]
+     (-reduce coll (rest f) (first f)))
+    ([coll f start]
+     (let [response (jq/$deferred)]
+       (dcell-reduce response coll f start)
+       response))))
+
 (defn close! [writer]
   (dc/resolve (deref writer) nil))
 
