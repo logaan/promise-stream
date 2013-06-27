@@ -41,8 +41,22 @@
 
 (jq/done (reduce* + 0 (closed-dlist 1 2)) #(assert (= 3 %)))
 
-(jq/done (r/reduce (dc/dapply +) (dc/deferred 0) (closed-dlist 1 2 3 4)) log)
-(jq/done (r/reduce (dc/dapply +) (closed-dlist 1 2 3 4)) log)
+(jq/done
+  (r/reduce (dc/dapply +) (dc/deferred 0) (closed-dlist 1 2 3 4))
+  #(assert (= 10 %)))
 
-(first (r/map (dc/dapply log) (r/map (dc/dapply inc) (closed-dlist 1 2 3 4))))
+(jq/done
+  (r/reduce (dc/dapply +) (closed-dlist 1 2 3 4))
+  #(assert (= 10 %)))
+
+(defn transparent-log [v]
+  (apply log v)
+  v)
+
+; Zomg you have to reduce at the end lol.
+(jq/done
+  (r/reduce (dc/dapply +)
+                   (r/map (dc/dapply inc)
+                          (closed-dlist 0 1 2 3)))
+  #(assert (= 10 %)))
 
