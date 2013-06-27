@@ -1,7 +1,3 @@
-; I use container to refer to a wrapped deferred that doesn't contain a cons
-; cell yet. Open means that the deferred has not been resolved yet. Closed
-; means that the deferred has been resolved. An empty cell can be used to
-; terminate a list.
 (ns promise-list.dcell
   (:require [jayq.core :as jq]))
 
@@ -51,9 +47,7 @@
   ISeqable
   (-seq [this] this))
 
-(defn dapply
-  "fmap"
-  [f]
+(defn dapply [f]
   (fn
     ([]
      (deferred (f)))
