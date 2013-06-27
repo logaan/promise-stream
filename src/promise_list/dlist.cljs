@@ -30,15 +30,3 @@
     (if (empty? cell)
       (jq/resolve return seed)
       (reduce* return f (f seed (first cell)) (rest cell)))))))
-
-(def map*)
-
-(def concat*)
-
-(def mapcat*)
-
-(def plist-m
-  {:return closed-plist
-   :bind mapcat*
-   :zero identity})
-
