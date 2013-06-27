@@ -1,20 +1,20 @@
-(ns promise-list.dlist
-  (:require [promise-list.dcell :as dc]
+(ns promise-list.plist
+  (:require [promise-list.pcell :as pc]
             [jayq.core :as jq]))
 
-(defn closed-dlist [& values]
-  (reduce #(dc/closed-cell %2 %1) (dc/empty-cell) values))
+(defn closed-plist [& values]
+  (reduce #(pc/closed-cell %2 %1) (pc/empty-cell) values))
 
 (defn reduce* [deferred coll f daccumulator]
   (let [dresult (f daccumulator (first coll))
         dtail   (rest coll)]
-    (dc/done dtail (fn [tail]
+    (pc/done dtail (fn [tail]
       (if (empty? tail)
         (jq/done dresult (fn [result]
           (jq/resolve deferred result)))
         (reduce* deferred dtail f dresult))))))
 
-(extend-type dc/DCell
+(extend-type pc/DCell
   IReduce
   (-reduce
     ([coll f]
@@ -24,20 +24,20 @@
        (reduce* response coll f start)
        response))))
 
-(defn open-dlist [& values]
-  (let [tail  (dc/open-container)
-        dlist (reduce #(dc/closed-cell %2 %1) tail values)]
-    (list dlist (atom tail))))
+(defn open-plist [& values]
+  (let [tail  (pc/open-container)
+        plist (reduce #(pc/closed-cell %2 %1) tail values)]
+    (list plist (atom tail))))
 
 (defn append! [writer dvalue]
   (let [current-tail @writer
-        new-tail     (dc/open-container)]
+        new-tail     (pc/open-container)]
     (jq/done dvalue (fn [value]
                       (let [contents (cons value new-tail)]
-                        (dc/resolve current-tail contents))))
+                        (pc/resolve current-tail contents))))
     (reset! writer new-tail)
     writer))
 
 (defn close! [writer]
-  (dc/resolve (deref writer) nil))
+  (pc/resolve (deref writer) nil))
 

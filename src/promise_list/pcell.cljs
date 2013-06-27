@@ -1,4 +1,4 @@
-(ns promise-list.dcell
+(ns promise-list.pcell
   (:require [jayq.core :as jq]))
 
 (defn deferred [value]
@@ -21,22 +21,22 @@
 (defn closed-cell [v1 v2]
   (closed-container (cons v1 v2)))
 
-(defn done [dcell callback]
-  (jq/done (.-deferred-wrapping-cell dcell) callback))
+(defn done [pcell callback]
+  (jq/done (.-deferred-wrapping-cell pcell) callback))
 
-(defn resolve [dcell value]
-  (jq/resolve (.-deferred-wrapping-cell dcell) value))
+(defn resolve [pcell value]
+  (jq/resolve (.-deferred-wrapping-cell pcell) value))
 
 (extend-type DCell
   ISeq
-  (-first [dcell]
+  (-first [pcell]
     (let [first-deferred (jq/$deferred)]
-      (done dcell (fn [cell]
+      (done pcell (fn [cell]
         (jq/resolve first-deferred (first cell))))
       (jq/promise first-deferred)))
-  (-rest [dcell]
+  (-rest [pcell]
     (let [rest-deferred (jq/$deferred)]
-      (done dcell (fn [cell]
+      (done pcell (fn [cell]
         (let [tail (rest cell)]
           (if (empty? tail)
             (jq/resolve rest-deferred nil)
