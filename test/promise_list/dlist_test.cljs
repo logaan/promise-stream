@@ -25,8 +25,6 @@
   (append! writer fast-response)
   (js/setTimeout #(jq/resolve slow-response 1) 200))
 
-; Should output 1\n2
-
 ; close!
 (let [[reader writer] (open-dlist)]
   (dc/done reader #(assert (empty? %)))
@@ -41,16 +39,20 @@
 
 ; Reducers
 (jq/done
+  (r/reduce (dc/dapply +) (closed-dlist))
+  #(assert (= 0 %)))
+
+(jq/done
+  (r/reduce (dc/dapply +) (closed-dlist 1))
+  #(assert (= 1 %)))
+
+(jq/done
   (r/reduce (dc/dapply +) (dc/deferred 0) (closed-dlist 1 2 3 4))
   #(assert (= 10 %)))
 
 (jq/done
   (r/reduce (dc/dapply +) (closed-dlist 1 2 3 4))
   #(assert (= 10 %)))
-
-(defn transparent-log [v]
-  (apply log v)
-  v)
 
 (jq/done
   (r/reduce (dc/dapply +)
