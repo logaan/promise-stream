@@ -9,8 +9,13 @@
 
 ; append!
 (let [[reader writer] (open-dlist)]
-  (jq/done (first reader) (fn [v] #(assert (= 1 %))))
-  (append! writer 1))
+  (jq/done (first reader) #(assert (= 1 %)))
+  (jq/done (first (rest reader)) #(assert (= 2 %)))
+  (jq/done (first (rest (rest reader))) #(assert  (= 3 %)))
+  (jq/done (first (rest (rest (rest reader)))) #(assert  (= 4 %)))
+  (reduce append! writer (map dc/deferred [1 2 3 4])))
+
+; Should output 1\n2
 
 ; close!
 (let [[reader writer] (open-dlist)]

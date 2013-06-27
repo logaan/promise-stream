@@ -29,8 +29,8 @@
 (defn done [dcell callback]
   (jq/done (:deferred-wrapping-cell dcell) callback))
 
-(defn resolve [dcell callback]
-  (jq/resolve (:deferred-wrapping-cell dcell) callback))
+(defn resolve [dcell value]
+  (jq/resolve (:deferred-wrapping-cell dcell) value))
 
 (extend-type DCell
   ISeq

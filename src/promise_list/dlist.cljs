@@ -1,4 +1,5 @@
 (ns promise-list.dlist
+  (:use [jayq.util :only [log]])
   (:require [promise-list.dcell :as dc]
             [jayq.core :as jq]))
 
@@ -13,10 +14,14 @@
         dlist (reduce #(dc/closed-cell %2 %1) tail values)]
     (list dlist (atom tail))))
 
-(defn append! [writer value]
-  (let [tail-cell (dc/open-cell value)]
-    (dc/resolve (deref writer) tail-cell)
-    (reset! writer (rest tail-cell))))
+(defn append! [writer dvalue]
+  (let [current-tail @writer
+        new-tail     (dc/DCell. (jq/$deferred))]
+    (jq/done dvalue (fn [value]
+                      (let [contents (cons value new-tail)]
+                        (dc/resolve current-tail contents))))
+    (reset! writer new-tail)
+    writer))
 
 (defn close! [writer]
   (dc/resolve (deref writer) nil))
