@@ -17,7 +17,7 @@
   (reduce append! writer (map dc/deferred [1 2 3 4])))
 
 (let [[reader writer] (open-dlist)
-      slow-response   (dc/deferred)
+      slow-response   (jq/$deferred)
       fast-response   (dc/deferred 2)]
   (jq/done (first reader) #(assert (= 1 %)))
   (jq/done (first (rest reader)) #(assert (= 2 %)))
