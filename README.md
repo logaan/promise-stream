@@ -22,6 +22,10 @@ on a value can be registered before that value has been added to the sequence.
   (produce writer 1))
 ```
 
+## Project structure
+
+Utility scripts can be found in the `script` directory. Here you can start the
+repl, or a watcher that will automatically build.
 
 ## Roadmap
 
