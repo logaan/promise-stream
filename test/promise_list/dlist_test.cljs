@@ -42,7 +42,7 @@
 (jq/done (reduce* + 0 (closed-dlist 1 2)) #(assert (= 3 %)))
 
 (jq/done (r/reduce (dc/dapply +) (dc/deferred 0) (closed-dlist 1 2 3 4)) log)
+(jq/done (r/reduce (dc/dapply +) (closed-dlist 1 2 3 4)) log)
 
-(doall (r/map (dc/dapply inc) (closed-dlist 1 2 3 4)))
-
+(first (r/map (dc/dapply log) (r/map (dc/dapply inc) (closed-dlist 1 2 3 4))))
 

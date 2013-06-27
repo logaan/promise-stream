@@ -56,6 +56,8 @@
   "fmap"
   [f]
   (fn
+    ([]
+     (deferred (f)))
     ([d]
      (let [new-d (jq/$deferred)]
        (jq/done d (fn [v]
