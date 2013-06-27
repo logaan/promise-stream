@@ -33,7 +33,7 @@
     (let [first-deferred (jq/$deferred)]
       (done dcell (fn [cell]
         (jq/resolve first-deferred (first cell))))
-      first-deferred))
+      (jq/promise first-deferred)))
   (-rest [dcell]
     (let [rest-deferred (jq/$deferred)]
       (done dcell (fn [cell]
