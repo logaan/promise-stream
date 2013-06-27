@@ -2,7 +2,7 @@
 ; cell yet. Open means that the deferred has not been resolved yet. Closed
 ; means that the deferred has been resolved. An empty cell can be used to
 ; terminate a list.
-(ns promise-list.pcell
+(ns promise-list.dcell
   (:require [jayq.core :as jq]))
 
 (defn promise [value]
@@ -25,22 +25,22 @@
 (defn closed-cell [v1 v2]
   (closed-container (cons v1 v2)))
 
-(defn done [pcell callback]
-  (jq/done (:deferred-wrapping-cell pcell) callback))
+(defn done [dcell callback]
+  (jq/done (:deferred-wrapping-cell dcell) callback))
 
-(defn resolve [pcell callback]
-  (jq/resolve (:deferred-wrapping-cell pcell) callback))
+(defn resolve [dcell callback]
+  (jq/resolve (:deferred-wrapping-cell dcell) callback))
 
 (extend-type DCell
   ISeq
-  (-first [pcell]
+  (-first [dcell]
     (let [first-deferred (jq/$deferred)]
-      (done pcell (fn [cell]
+      (done dcell (fn [cell]
         (jq/resolve first-deferred (first cell))))
       (jq/promise first-deferred)))
-  (-rest [pcell]
+  (-rest [dcell]
     (let [rest-deferred (jq/$deferred)]
-      (done pcell (fn [cell]
+      (done dcell (fn [cell]
         (let [tail (rest cell)]
           (if (empty? tail)
             (jq/resolve rest-deferred nil)

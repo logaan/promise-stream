@@ -1,32 +1,32 @@
-(ns promise-list.plist
-  (:require [promise-list.pcell :as pc]
+(ns promise-list.dlist
+  (:require [promise-list.dcell :as dc]
             [jayq.core :as jq]))
 
-(defn closed-plist [& values]
-  (reduce #(pc/closed-cell %2 %1) (pc/empty-cell) values))
+(defn closed-dlist [& values]
+  (reduce #(dc/closed-cell %2 %1) (dc/empty-cell) values))
 
-(defn open-plist
-  "Takes a seq of values packs those values into a plist. Returns a pair
-  containing that plist and a writer that can be used to append to the list."
+(defn open-dlist
+  "Takes a seq of values packs those values into a dlist. Returns a pair
+  containing that dlist and a writer that can be used to append to the list."
   [& values]
-  (let [tail  (pc/open-container)
-        plist (reduce #(pc/closed-cell %2 %1) tail values)]
-    (list plist (atom tail))))
+  (let [tail  (dc/open-container)
+        dlist (reduce #(dc/closed-cell %2 %1) tail values)]
+    (list dlist (atom tail))))
 
 (defn append! [writer value]
-  (let [tail-cell (pc/open-cell value)]
-    (pc/resolve (deref writer) tail-cell)
+  (let [tail-cell (dc/open-cell value)]
+    (dc/resolve (deref writer) tail-cell)
     (reset! writer (rest tail-cell))))
 
 (defn close! [writer]
-  (pc/resolve (deref writer) nil))
+  (dc/resolve (deref writer) nil))
 
 (defn reduce*
   ([f seed coll]
    (let [return (jq/$deferred)]
      (reduce* return f seed coll)
      (jq/promise return)))
-  ([return f seed coll] (pc/done coll (fn [cell]
+  ([return f seed coll] (dc/done coll (fn [cell]
     (if (empty? cell)
       (jq/resolve return seed)
       (reduce* return f (f seed (first cell)) (rest cell)))))))
