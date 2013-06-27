@@ -45,13 +45,3 @@
 (defn close! [writer]
   (dc/resolve (deref writer) nil))
 
-(defn reduce*
-  ([f seed coll]
-   (let [return (jq/$deferred)]
-     (reduce* return f seed coll)
-     return))
-  ([return f seed coll] (dc/done coll (fn [cell]
-    (if (empty? cell)
-      (jq/resolve return seed)
-      (reduce* return f (f seed (first cell)) (rest cell)))))))
-

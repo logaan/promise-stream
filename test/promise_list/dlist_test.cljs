@@ -39,8 +39,7 @@
      (take 3)
      doall)
 
-(jq/done (reduce* + 0 (closed-dlist 1 2)) #(assert (= 3 %)))
-
+; Reducers
 (jq/done
   (r/reduce (dc/dapply +) (dc/deferred 0) (closed-dlist 1 2 3 4))
   #(assert (= 10 %)))
@@ -53,10 +52,10 @@
   (apply log v)
   v)
 
-; Zomg you have to reduce at the end lol.
 (jq/done
   (r/reduce (dc/dapply +)
+            (r/map (dc/dapply inc)
                    (r/map (dc/dapply inc)
-                          (closed-dlist 0 1 2 3)))
-  #(assert (= 10 %)))
+                          (closed-dlist 1 2 3 4))))
+  #(assert (= 18 %)))
 
