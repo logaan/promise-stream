@@ -25,7 +25,8 @@ on a value can be registered before that value has been added to the sequence.
 
 ## Roadmap
 
-* Implement map*, filter*, partition*, split-at*, etc*
+* Make sure that deferred objects aren't leaked. Instead expose promise
+  objects. Only keep the original deferred object for open seqs.
 
 ## License
 

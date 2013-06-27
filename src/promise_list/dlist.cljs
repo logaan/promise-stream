@@ -25,7 +25,7 @@
   ([f seed coll]
    (let [return (jq/$deferred)]
      (reduce* return f seed coll)
-     (jq/promise return)))
+     return))
   ([return f seed coll] (dc/done coll (fn [cell]
     (if (empty? cell)
       (jq/resolve return seed)
