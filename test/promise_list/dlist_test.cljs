@@ -15,6 +15,15 @@
   (jq/done (first (rest (rest (rest reader)))) #(assert  (= 4 %)))
   (reduce append! writer (map dc/deferred [1 2 3 4])))
 
+(let [[reader writer] (open-dlist)
+      slow-response   (dc/deferred)
+      fast-response   (dc/deferred 2)]
+  (jq/done (first reader) #(assert (= 1 %)))
+  (jq/done (first (rest reader)) #(assert (= 2 %)))
+  (append! writer slow-response)
+  (append! writer fast-response)
+  (js/setTimeout #(jq/resolve slow-response 1) 200))
+
 ; Should output 1\n2
 
 ; close!
