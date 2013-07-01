@@ -37,6 +37,11 @@
      (take 3)
      doall)
 
+(jq/done
+  (->> (closed-plist 1 2 3 4)
+       (reduce (pc/dapply +)))
+  log)
+
 ; Reducers
 (jq/done
   (r/reduce (pc/dapply +) (closed-plist))
