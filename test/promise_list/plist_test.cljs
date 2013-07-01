@@ -1,4 +1,5 @@
 (ns promise-list.plist-test
+  (:use-macros [promise-list.macros :only [let-plist]])
   (:use [promise-list.plist :only
          [closed-plist open-plist append! close! reduce* map* concat* mapcat* count*]]
         [jayq.util :only [log]])
@@ -89,4 +90,11 @@
                    (r/map (pc/dapply inc)
                           (closed-plist 1 2 3 4))))
   #(assert (= 18 %)))
+
+; Macros
+(jq/done
+  (->> (let-plist [n (closed-plist 1 2 3 4)]
+            (inc n))
+       (reduce (pc/dapply +)))
+  #(assert (= 14 %)))
 

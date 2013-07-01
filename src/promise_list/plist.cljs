@@ -94,3 +94,8 @@
           list-of-lists)
     reader))
 
+(def plist-m
+  {:return (comp pc/deferred closed-plist)
+   :bind   #(mapcat* %2 %1)
+   :zero   identity})
+
