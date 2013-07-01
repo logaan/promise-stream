@@ -42,16 +42,33 @@
 (defn close! [writer]
   (pc/resolve (deref writer) nil))
 
-(defn map*
-  ([f coll]
-   (let [[reader writer] (open-plist)]
-     (map* writer f coll)
-     reader))
-  ([out f dcell]
-   (pc/done dcell (fn [cell]
+(defn traverse
+  "vf will be called with every value. ef will be called at the end of the
+  list."
+  [coll vf ef]
+   (pc/done coll (fn [cell]
      (if (empty? cell)
-       (close! out)
+       (ef)
        (do 
-         (append! out (f (first cell)))
-         (map* out f (rest cell))))))))
+         (vf (first cell))
+         (traverse (rest cell) vf ef))))))
+
+(defn map* [f coll]
+   (let [[reader writer] (open-plist)]
+     (traverse coll #(append! writer (f %)) #(close! writer))
+     reader))
+
+(defn copy-to-shared-collection [coll writer open-colls]
+  (traverse coll
+            #(append! writer (pc/deferred %))
+            (fn []
+              (swap! open-colls dec)
+              (if (zero? @open-colls) (close! writer)))))
+
+(defn concat* [coll1 coll2]
+  (let [open-colls      (atom 2)
+        [reader writer] (open-plist)]
+    (copy-to-shared-collection coll1 writer open-colls)
+    (copy-to-shared-collection coll2 writer open-colls)
+    reader))
 
