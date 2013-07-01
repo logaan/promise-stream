@@ -1,5 +1,6 @@
 (ns promise-list.plist-test
-  (:use [promise-list.plist :only [closed-plist open-plist append! close! reduce*]]
+  (:use [promise-list.plist :only
+         [closed-plist open-plist append! close! reduce* map*]]
         [jayq.util :only [log]])
   (:require [jayq.core :as jq]
             [promise-list.pcell :as pc]
@@ -40,7 +41,13 @@
 (jq/done
   (->> (closed-plist 1 2 3 4)
        (reduce (pc/dapply +)))
-  log)
+  #(assert (= 10 %)))
+
+(jq/done
+  (->> (closed-plist 1 2 3 4)
+     (map* (comp pc/deferred inc))
+     (reduce (pc/dapply +)))
+  #(assert (= 14 %)))
 
 ; Reducers
 (jq/done

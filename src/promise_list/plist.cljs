@@ -1,4 +1,5 @@
 (ns promise-list.plist
+  (:use [jayq.util :only [log]])
   (:require [promise-list.pcell :as pc]
             [jayq.core :as jq]))
 
@@ -40,4 +41,17 @@
 
 (defn close! [writer]
   (pc/resolve (deref writer) nil))
+
+(defn map*
+  ([f coll]
+   (let [[reader writer] (open-plist)]
+     (map* writer f coll)
+     reader))
+  ([out f dcell]
+   (pc/done dcell (fn [cell]
+     (if (empty? cell)
+       (close! out)
+       (do 
+         (append! out (f (first cell)))
+         (map* out f (rest cell))))))))
 
