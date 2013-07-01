@@ -87,11 +87,10 @@
         [reader writer] (open-plist)
         list-of-lists   (map* f coll)]
     (jq/done (count* coll) #(reset! total-colls %))
-    (traverse list-of-lists
-              (fn [inner-list]
-                (traverse inner-list
-                          #(append! writer (pc/deferred %))
-                          (close-if-complete completed-colls total-colls writer)))
-              identity)
+    (map* (fn [inner-list]
+            (traverse inner-list
+                      #(append! writer (pc/deferred %))
+                      (close-if-complete completed-colls total-colls writer)))
+          list-of-lists)
     reader))
 
