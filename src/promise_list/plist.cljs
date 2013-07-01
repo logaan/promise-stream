@@ -18,7 +18,7 @@
   IReduce
   (-reduce
     ([coll f]
-     (-reduce coll (rest f) (first f)))
+     (-reduce (rest coll) f (first coll)))
     ([coll f start]
      (let [response (jq/$deferred)]
        (reduce* response coll f start)
