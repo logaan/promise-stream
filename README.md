@@ -3,24 +3,27 @@
 A promise list serves the same purpose as a blocking lazy sequence. Javascript
 code may not block and so an asynchronous alternative is required.
 
-## Usage
+## Example
 
-Accessing the second item from a pre-populated dlist.
-
-```clojure
-(jayq.core/done (first (rest (dlist 1 2 3)))
-  (fn [v] (assert (= 2 v)))
-```
-
-Using productive-dlist we can write to the tail of a dlist. Code that operates
-on a value can be registered before that value has been added to the sequence.
+Using promise-lists we can avoid callback hell and create functional code that
+elegantly expresses our data flow, regardless of whether that data is gathered
+asyncronously.
 
 ```clojure
-(let [writer (productive-dlist)
-      reader (deref writer)]
-  (jayq.core/done (first reader) (fn [v] (assert (= 1 v))))
-  (produce writer 1))
+(let [changes   (event-list ($ :#query) "change")
+      keyups    (event-list ($ :#query) "keyup")
+      events    (concat* changes keyups)
+      queries   (mapd* (comp :value summarise) events)
+      responses (map*  perform-search queries)
+      groups    (mapd* group-names responses)]
+  (mapd* set-query-title!  queries)
+  (mapd* set-results-list! groups))
 ```
+
+Here we are merging two lists that represent all change and keyup events that
+will ever occur on the query input. Once merged we pull the value out of the
+raw event and use it to search for groups on flickr. The responses are
+transformed into lists of names which are then rendered on the page.
 
 ## Project structure
 
