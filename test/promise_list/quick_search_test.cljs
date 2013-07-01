@@ -7,7 +7,8 @@
 (defn event-list [element event-type]
   (with-open-plist (fn [writer]
     (on element event-type (fn [event]
-      (append! writer (deferred event)))))))
+      (append! writer (deferred event))
+      (.preventDefault event))))))
 
 (defn summarise [event]
   (let [target (aget event "target")]
@@ -27,7 +28,10 @@
   (if-let [groups (aget response "groups")]
     (map #(aget % "name") (aget groups "group"))))
 
-(defn update-results-list [results]
+(defn set-query-title! [new-title]
+  (text ($ :#query-title) new-title))
+
+(defn set-results-list! [results]
   (remove ($ "#results li"))
   (mapv #(append ($ :#results) (str "<li>" % "</li>")) results))
 
@@ -37,6 +41,6 @@
       queries   (mapd* (comp :value summarise) events)
       responses (map*  perform-search queries)
       groups    (mapd* group-names responses)]
-  (mapd* (partial text ($ :#query-title)) queries)
-  (mapd* update-results-list groups))
+  (mapd* set-query-title!  queries)
+  (mapd* set-results-list! groups))
 
