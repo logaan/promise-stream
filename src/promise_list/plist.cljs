@@ -65,10 +65,9 @@
               (swap! open-colls dec)
               (if (zero? @open-colls) (close! writer)))))
 
-(defn concat* [coll1 coll2]
-  (let [open-colls      (atom 2)
+(defn concat* [& colls]
+  (let [open-colls      (atom (count colls))
         [reader writer] (open-plist)]
-    (copy-to-shared-collection coll1 writer open-colls)
-    (copy-to-shared-collection coll2 writer open-colls)
+    (doall (map #(copy-to-shared-collection % writer open-colls) colls))
     reader))
 

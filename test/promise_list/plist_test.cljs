@@ -50,7 +50,7 @@
   #(assert (= 14 %)))
 
 (jq/done
-  (->> (concat* (closed-plist 1 2 3 4) (closed-plist 5 6 7 8))
+  (->> (concat* (closed-plist 1 2 3 4) (closed-plist 5 6) (closed-plist 7 8))
        (map* (comp pc/deferred inc))
        (reduce (pc/dapply +)))
   #(assert (= 44 %)))
