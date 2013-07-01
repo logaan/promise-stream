@@ -68,31 +68,30 @@
       (do
         (close! writer)))))
 
+(defn co-operative-close [total-colls-future writer callback]
+  (let [total-colls     (atom nil)
+        completed-colls (atom 0)
+        close-function  (close-if-complete completed-colls total-colls writer)]
+  (jq/done total-colls-future #(reset! total-colls %))
+  (callback close-function)))
+
 (defn concat* [& colls]
   (with-open-plist (fn [writer]
-    (let [total-colls     (atom (count colls))
-          completed-colls (atom 0)]
+    (co-operative-close (pc/deferred (count colls)) writer (fn [close]
       (doall
-        (map
-          (fn [coll]
-            (traverse coll
-                      #(append! writer (pc/deferred %))
-                      (close-if-complete completed-colls total-colls writer))) colls))))))
+        (map (fn [coll] (traverse coll #(append! writer (pc/deferred %)) close))
+             colls)))))))
 
 (defn count* [coll]
   (reduce (pc/dapply (fn [tally v] (inc tally))) (pc/deferred 0) coll))
 
 (defn mapcat* [f coll]
   (with-open-plist (fn [writer]
-    (let [total-colls     (atom nil)
-          completed-colls (atom 0)
-          list-of-lists   (map* (comp pc/deferred f) coll)]
-      (jq/done (count* coll) #(reset! total-colls %))
-      (map* (fn [inner-list]
-              (traverse inner-list
-                        #(append! writer (pc/deferred %))
-                        (close-if-complete completed-colls total-colls writer)))
-            list-of-lists)))))
+    (co-operative-close (count* coll) writer (fn [close]
+      (let [list-of-lists   (map* (comp pc/deferred f) coll)]
+        (map* (fn [inner-list]
+                (traverse inner-list #(append! writer (pc/deferred %)) close))
+              list-of-lists)))))))
 
 (def plist-m
   {:return closed-plist
