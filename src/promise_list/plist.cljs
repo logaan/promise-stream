@@ -74,9 +74,24 @@
 (defn count* [coll]
   (reduce (pc/dapply (fn [tally v] (inc tally))) (pc/deferred 0) coll))
 
-; (defn mapcat* [f coll]
-;   (let [total-colls     (atom nil)
-;         completed-colls (atom 0)]
-;     (jq/done (reduce (pc/dapply (fn [a v] (inc a))) coll)
-;              (fn [count] ))))
+(defn close-if-complete [completed-colls total-colls writer]
+  (fn []
+    (swap! completed-colls inc)
+    (if (= @total-colls @completed-colls)
+      (do
+        (close! writer)))))
+
+(defn mapcat* [f coll]
+  (let [total-colls     (atom nil)
+        completed-colls (atom 0)
+        [reader writer] (open-plist)
+        list-of-lists   (map* f coll)]
+    (jq/done (count* coll) #(reset! total-colls %))
+    (traverse list-of-lists
+              (fn [inner-list]
+                (traverse inner-list
+                          #(append! writer (pc/deferred %))
+                          (close-if-complete completed-colls total-colls writer)))
+              identity)
+    reader))
 
