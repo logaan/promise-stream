@@ -62,7 +62,7 @@
 
 (jq/done
   (->> (closed-plist 1 2 3 4)
-       (mapcat* #(pc/deferred (closed-plist (dec %) % (inc %))))
+       (mapcat* #(closed-plist (dec %) % (inc %)))
        (reduce (pc/dapply +)))
   #(assert (= 30 %)))
 

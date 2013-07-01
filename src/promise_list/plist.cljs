@@ -85,7 +85,7 @@
   (let [total-colls     (atom nil)
         completed-colls (atom 0)
         [reader writer] (open-plist)
-        list-of-lists   (map* f coll)]
+        list-of-lists   (map* (comp pc/deferred f) coll)]
     (jq/done (count* coll) #(reset! total-colls %))
     (map* (fn [inner-list]
             (traverse inner-list
@@ -95,7 +95,7 @@
     reader))
 
 (def plist-m
-  {:return (comp pc/deferred closed-plist)
+  {:return closed-plist
    :bind   #(mapcat* %2 %1)
    :zero   identity})
 
