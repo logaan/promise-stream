@@ -1,6 +1,6 @@
 (ns promise-list.plist-test
   (:use [promise-list.plist :only
-         [closed-plist open-plist append! close! reduce* map* concat*]]
+         [closed-plist open-plist append! close! reduce* map* concat* mapcat* count*]]
         [jayq.util :only [log]])
   (:require [jayq.core :as jq]
             [promise-list.pcell :as pc]
@@ -54,6 +54,17 @@
        (map* (comp pc/deferred inc))
        (reduce (pc/dapply +)))
   #(assert (= 44 %)))
+
+(jq/done
+  (count* (closed-plist 1 2 3 4))
+  #(assert (= 4 log)))
+
+; (jq/done
+;   (->> (closed-plist 1 2 3 4)
+;        (mapcat* (fn [v] (log v) (pc/deferred (closed-plist (dec v) v (inc v)))))
+;        (map* (fn [v] (log v) (pc/deferred v)))
+;        (reduce (pc/dapply +)))
+;   log)
 
 ; Reducers
 ; I think the only reason this is passing is because of nil + nil = 0 in cljs

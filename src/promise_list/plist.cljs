@@ -71,3 +71,12 @@
     (doall (map #(copy-to-shared-collection % writer open-colls) colls))
     reader))
 
+(defn count* [coll]
+  (reduce (pc/dapply (fn [tally v] (inc tally))) (pc/deferred 0) coll))
+
+; (defn mapcat* [f coll]
+;   (let [total-colls     (atom nil)
+;         completed-colls (atom 0)]
+;     (jq/done (reduce (pc/dapply (fn [a v] (inc a))) coll)
+;              (fn [count] ))))
+
