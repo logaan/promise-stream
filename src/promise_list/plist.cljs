@@ -58,8 +58,8 @@
     reader))
 
 (defn map* [f coll]
-   (with-open-plist (fn [writer]
-     (traverse coll #(append! writer (f %)) #(close! writer)))))
+  (with-open-plist (fn [writer]
+    (traverse coll #(append! writer (f %)) #(close! writer)))))
 
 (defn close-if-complete [completed-colls total-colls writer]
   (fn []
@@ -88,7 +88,7 @@
 (defn mapcat* [f coll]
   (with-open-plist (fn [writer]
     (co-operative-close (count* coll) writer (fn [close]
-      (let [list-of-lists   (map* (comp pc/deferred f) coll)]
+      (let [list-of-lists  (map* (comp pc/deferred f) coll)]
         (map* (fn [inner-list]
                 (traverse inner-list #(append! writer (pc/deferred %)) close))
               list-of-lists)))))))
