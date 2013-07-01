@@ -1,5 +1,4 @@
 (ns promise-list.plist
-  (:use [jayq.util :only [log]])
   (:require [promise-list.pcell :as pc]
             [jayq.core :as jq]))
 
@@ -58,28 +57,27 @@
      (traverse coll #(append! writer (f %)) #(close! writer))
      reader))
 
-(defn copy-to-shared-collection [coll writer open-colls]
-  (traverse coll
-            #(append! writer (pc/deferred %))
-            (fn []
-              (swap! open-colls dec)
-              (if (zero? @open-colls) (close! writer)))))
-
-(defn concat* [& colls]
-  (let [open-colls      (atom (count colls))
-        [reader writer] (open-plist)]
-    (doall (map #(copy-to-shared-collection % writer open-colls) colls))
-    reader))
-
-(defn count* [coll]
-  (reduce (pc/dapply (fn [tally v] (inc tally))) (pc/deferred 0) coll))
-
 (defn close-if-complete [completed-colls total-colls writer]
   (fn []
     (swap! completed-colls inc)
     (if (= @total-colls @completed-colls)
       (do
         (close! writer)))))
+
+(defn concat* [& colls]
+  (let [total-colls     (atom (count colls))
+        completed-colls (atom 0)
+        [reader writer] (open-plist)]
+    (doall
+      (map
+        (fn [coll]
+          (traverse coll
+                    #(append! writer (pc/deferred %))
+                    (close-if-complete completed-colls total-colls writer))) colls))
+    reader))
+
+(defn count* [coll]
+  (reduce (pc/dapply (fn [tally v] (inc tally))) (pc/deferred 0) coll))
 
 (defn mapcat* [f coll]
   (let [total-colls     (atom nil)
