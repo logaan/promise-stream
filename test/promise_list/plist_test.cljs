@@ -61,9 +61,9 @@
 
 (jq/done
   (->> (closed-plist 1 2 3 4)
-       (mapcat* (fn [v] (log v) (pc/deferred (closed-plist 1))))
+       (mapcat* #(pc/deferred (closed-plist (dec %) % (inc %))))
        (reduce (pc/dapply +)))
-  log)
+  #(assert (= 30 %)))
 
 ; Reducers
 ; I think the only reason this is passing is because of nil + nil = 0 in cljs
