@@ -61,6 +61,9 @@
   (with-open-plist (fn [writer]
     (traverse coll #(append! writer (f %)) #(close! writer)))))
 
+(defn mapd* [f coll]
+  (map* (comp pc/deferred f) coll))
+
 (defn close-if-complete [completed-colls total-colls writer]
   (fn []
     (swap! completed-colls inc)
