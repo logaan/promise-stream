@@ -4,7 +4,7 @@
             [jayq.core :as jq]))
 
 (defn closed-plist [& values]
-  (reduce #(pc/closed-cell %2 %1) (pc/empty-cell) values))
+  (reduce #(pc/closed-cell %2 %1) (pc/empty-cell) (reverse values)))
 
 (defn reduce* [deferred coll f daccumulator]
   (let [dresult (f daccumulator (first coll))
