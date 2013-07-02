@@ -57,9 +57,17 @@
     (f writer)
     reader))
 
+; Here to prevent closing over head
+(defn modifying-appender [writer f]
+  (fn [v] (append! writer (f v))))
+
+; Here to prevent closing over head
+(defn closer [writer]
+  (fn [] (close! writer)))
+
 (defn map* [f coll]
   (with-open-plist (fn [writer]
-    (traverse coll #(append! writer (f %)) #(close! writer)))))
+    (traverse coll (modifying-appender writer f) (closer writer)))))
 
 (defn mapd* [f coll]
   (map* (comp pc/deferred f) coll))
@@ -82,19 +90,25 @@
   (with-open-plist (fn [writer]
     (co-operative-close (pc/deferred (count colls)) writer (fn [close]
       (doall
-        (map (fn [coll] (traverse coll #(append! writer (pc/deferred %)) close))
+        (map (fn [coll] (traverse coll (modifying-appender writer pc/deferred) close))
              colls)))))))
 
+; Here to prevent closing over head
+(def tallier
+  (fn [tally v] (inc tally)))
+
 (defn count* [coll]
-  (reduce (pc/dapply (fn [tally v] (inc tally))) (pc/deferred 0) coll))
+  (reduce (pc/dapply tallier) (pc/deferred 0) coll))
+
+(defn inner-list-traverser [writer close]
+  (fn [inner-list]
+    (traverse inner-list (modifying-appender writer pc/deferred) close)))
 
 (defn mapcat* [f coll]
   (with-open-plist (fn [writer]
     (co-operative-close (count* coll) writer (fn [close]
       (let [list-of-lists  (map* (comp pc/deferred f) coll)]
-        (map* (fn [inner-list]
-                (traverse inner-list #(append! writer (pc/deferred %)) close))
-              list-of-lists)))))))
+        (map* (inner-list-traverser writer close) list-of-lists)))))))
 
 (def plist-m
   {:return closed-plist

@@ -10,6 +10,14 @@
       (append! writer (deferred event))
       (.preventDefault event))))))
 
+(defn metranome [interval]
+  (with-open-plist (fn [writer]
+    (js/window.setInterval
+      #(let [timestamp (.valueOf (js/Date.))
+             event     {:time timestamp}]
+         (append! writer (deferred event)))
+      interval))))
+
 (defn summarise [event]
   (let [target (aget event "target")]
     {:type   (aget event "type")
@@ -22,7 +30,7 @@
   v)
 
 (defn perform-search [query]
-  (js/jQuery.getJSON (str "http://api.flickr.com/services/rest/?method=flickr.groups.search&api_key=e400c83e08716edc21ce04d19a71d697&text=" query "&per_page=10&format=json&jsoncallback=?")))
+  (js/jQuery.getJSON (str "http://api.flickr.com/services/rest/?method=flickr.groups.search&api_key=f4640a7dc5acccbb86af84db4d311010&text=" query "&per_page=10&format=json&jsoncallback=?")))
 
 (defn group-names [response]
   (if-let [groups (aget response "groups")]
@@ -35,12 +43,19 @@
   (remove ($ "#results li"))
   (mapv #(append ($ :#results) (str "<li>" % "</li>")) results))
 
-(let [changes   (event-list ($ :#query) "change")
+(comment
+  (let [changes   (event-list ($ :#query) "change")
       keyups    (event-list ($ :#query) "keyup")
       events    (concat* changes keyups)
       queries   (mapd* (comp :value summarise) events)
       responses (map*  perform-search queries)
       groups    (mapd* group-names responses)]
   (mapd* set-query-title!  queries)
-  (mapd* set-results-list! groups))
+  (mapd* transparent-log events)
+  (mapd* set-results-list! groups)))
+
+(let [clock (metranome 200)]
+  (mapd* identity clock))
+
+(comment (js/window.setInterval (fn [] (+ 1 1)) 200))
 
