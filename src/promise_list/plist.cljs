@@ -41,16 +41,16 @@
 (defn close! [writer]
   (pc/resolve (deref writer) nil))
 
-(defn kittens [parent vf ef]
-  (fn [cell]
-    (if (empty? cell)
-      (ef)
-      (do 
-        (vf (first cell))
-        (parent (rest cell) vf ef)))))
-
-(defn traverse [coll vf ef]
-  (pc/done coll (kittens traverse vf ef)))
+(defn traverse
+  "vf will be called with every value. ef will be called at the end of the
+  list."
+  [coll vf ef]
+   (pc/done coll (fn [cell]
+     (if (empty? cell)
+       (ef)
+       (do 
+         (vf (first cell))
+         (traverse (rest cell) vf ef))))))
 
 (defn with-open-plist [f]
   (let [[reader writer] (open-plist)]
@@ -79,14 +79,11 @@
       (do
         (close! writer)))))
 
-(defn puppies [total-colls]
-  (fn [v] (reset! total-colls v)))
-
 (defn co-operative-close [total-colls-future writer callback]
   (let [total-colls     (atom nil)
         completed-colls (atom 0)
         close-function  (close-if-complete completed-colls total-colls writer)]
-  (jq/done total-colls-future (puppies total-colls))
+  (jq/done total-colls-future #(reset! total-colls %))
   (callback close-function)))
 
 (defn concat* [& colls]
