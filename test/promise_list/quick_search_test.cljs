@@ -62,7 +62,7 @@
    (log (str "starting at: " (timestamp)))
    (let [clock (metranome 200)]
      (mapd* identity clock)))
-  (* 30 1000))
+  (* 60 1000))
 
 (comment (js/window.setInterval (fn [] (+ 1 1)) 200))
 
