@@ -97,15 +97,14 @@
   ; Closing over coll
   (reduce (pc/dapply (fn [tally v] (inc tally))) (pc/deferred 0) coll))
 
-(defn inner-list-traverser [writer close]
-  (fn [inner-list]
-    (traverse inner-list (modifying-appender writer pc/deferred) close)))
-
 (defn mapcat* [f coll]
   (with-open-plist (fn [writer]
     (co-operative-close (count* coll) writer (fn [close]
       (let [list-of-lists  (map* (comp pc/deferred f) coll)]
-        (map* (inner-list-traverser writer close) list-of-lists)))))))
+        ; CLosing over coll
+        (map* (fn [inner-list]
+                (traverse inner-list (modifying-appender writer pc/deferred) close))
+              list-of-lists)))))))
 
 (def plist-m
   {:return closed-plist
