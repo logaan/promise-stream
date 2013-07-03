@@ -57,11 +57,11 @@
     (f writer)
     reader))
 
-; Here to prevent closing over head
+; These two generate functions to avoid having them close over the heads of
+; lists.
 (defn modifying-appender [writer f]
   (fn [v] (append! writer (f v))))
 
-; Here to prevent closing over head
 (defn closer [writer]
   (fn [] (close! writer)))
 
@@ -93,12 +93,9 @@
         (map (fn [coll] (traverse coll (modifying-appender writer pc/deferred) close))
              colls)))))))
 
-; Here to prevent closing over head
-(def tallier
-  (fn [tally v] (inc tally)))
-
 (defn count* [coll]
-  (reduce (pc/dapply tallier) (pc/deferred 0) coll))
+  ; Closing over coll
+  (reduce (pc/dapply (fn [tally v] (inc tally))) (pc/deferred 0) coll))
 
 (defn inner-list-traverser [writer close]
   (fn [inner-list]
