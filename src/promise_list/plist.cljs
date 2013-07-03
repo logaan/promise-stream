@@ -94,14 +94,12 @@
              colls)))))))
 
 (defn count* [coll]
-  ; Closing over coll
   (reduce (pc/dapply (fn [tally v] (inc tally))) (pc/deferred 0) coll))
 
 (defn mapcat* [f coll]
   (with-open-plist (fn [writer]
     (co-operative-close (count* coll) writer (fn [close]
       (let [list-of-lists  (map* (comp pc/deferred f) coll)]
-        ; CLosing over coll
         (map* (fn [inner-list]
                 (traverse inner-list (modifying-appender writer pc/deferred) close))
               list-of-lists)))))))

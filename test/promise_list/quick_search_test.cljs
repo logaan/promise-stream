@@ -12,8 +12,6 @@
       #(append! writer (deferred {:time (timestamp)}))
       interval))))
 
-(comment
-
 (defn event-list [element event-type]
   (with-open-plist (fn [writer]
     (on element event-type (fn [event]
@@ -32,7 +30,7 @@
   v)
 
 (defn perform-search [query]
-  (js/jQuery.getJSON (str "http://api.flickr.com/services/rest/?method=flickr.groups.search&api_key=f4640a7dc5acccbb86af84db4d311010&text=" query "&per_page=10&format=json&jsoncallback=?")))
+  (js/jQuery.getJSON (str "http://api.flickr.com/services/rest/?method=flickr.groups.search&api_key=d954ec3a5e2ac31e73ad2a256a8436c0&text=" query "&per_page=10&format=json&jsoncallback=?")))
 
 (defn group-names [response]
   (if-let [groups (aget response "groups")]
@@ -46,23 +44,29 @@
   (mapv #(append ($ :#results) (str "<li>" % "</li>")) results))
 
 (comment
-  (let [changes   (event-list ($ :#query) "change")
-      keyups    (event-list ($ :#query) "keyup")
-      events    (concat* changes keyups)
-      queries   (mapd* (comp :value summarise) events)
-      responses (map*  perform-search queries)
-      groups    (mapd* group-names responses)]
-  (mapd* set-query-title!  queries)
-  (mapd* transparent-log events)
-  (mapd* set-results-list! groups))))
+  (fn []
+   (let [changes   (event-list ($ :#query) "change")
+         keyups    (event-list ($ :#query) "keyup")
+         events    (concat* changes keyups)
+         queries   (mapd* (comp :value summarise) events)
+         responses (map*  perform-search queries)
+         groups    (mapd* group-names responses)]
+     (mapd* set-query-title!  queries)
+     (mapd* transparent-log events)
+     (mapd* set-results-list! groups))))
 
-(log (str "loaded at: " (timestamp)))
-(js/window.setTimeout
- (fn []
-   (log (str "starting at: " (timestamp)))
+; Memory leak tests
+(comment
+  (fn []
+   (let [threes (metranome 300)
+         fives  (metranome 500)
+         all    (concat* threes fives)
+         times  (mapd* (comp str :time) all)]
+     (mapd* set-query-title! times))))
+
+(comment (fn []
    (let [clock (metranome 200)]
-     (mapd* identity clock)))
-  (* 30 1000))
+     (mapd* identity clock))))
 
 (comment (js/window.setInterval (fn [] (+ 1 1)) 200))
 
