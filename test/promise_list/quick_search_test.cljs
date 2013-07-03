@@ -3,20 +3,22 @@
         [jayq.core :only [$ on val text remove append]]
         [promise-list.pcell :only [deferred]]
         [promise-list.plist :only [with-open-plist append! map* mapd* concat*]]))
+(defn timestamp []
+  (.valueOf (js/Date.)))
+
+(defn metranome [interval]
+  (with-open-plist (fn [writer]
+    (js/window.setInterval
+      #(append! writer (deferred {:time (timestamp)}))
+      interval))))
+
+(comment
 
 (defn event-list [element event-type]
   (with-open-plist (fn [writer]
     (on element event-type (fn [event]
       (append! writer (deferred event))
       (.preventDefault event))))))
-
-(defn metranome [interval]
-  (with-open-plist (fn [writer]
-    (js/window.setInterval
-      #(let [timestamp (.valueOf (js/Date.))
-             event     {:time timestamp}]
-         (append! writer (deferred event)))
-      interval))))
 
 (defn summarise [event]
   (let [target (aget event "target")]
@@ -52,10 +54,15 @@
       groups    (mapd* group-names responses)]
   (mapd* set-query-title!  queries)
   (mapd* transparent-log events)
-  (mapd* set-results-list! groups)))
+  (mapd* set-results-list! groups))))
 
-(let [clock (metranome 200)]
-  (mapd* identity clock))
+(log (str "loaded at: " (timestamp)))
+(js/window.setTimeout
+ (fn []
+   (log (str "starting at: " (timestamp)))
+   (let [clock (metranome 200)]
+     (mapd* identity clock)))
+  (* 30 1000))
 
 (comment (js/window.setInterval (fn [] (+ 1 1)) 200))
 

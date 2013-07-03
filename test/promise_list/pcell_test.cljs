@@ -1,7 +1,7 @@
 (ns promise-list.pcell-test
   (:use [promise-list.pcell :only [closed-cell empty-cell pcell done]])
   (:require [jayq.core :as jq]))
-
+(comment
 ; first
 (jq/done (first (closed-cell 1 (empty-cell))) #(assert (= 1 %)))
 
@@ -27,4 +27,4 @@
       list-beyond-end  (rest (rest plist))
       value-beyond-end (first list-beyond-end)]
   (done    list-beyond-end  #(assert (empty? %)))
-  (jq/done value-beyond-end #(assert (nil? %))))
+  (jq/done value-beyond-end #(assert (nil? %)))))

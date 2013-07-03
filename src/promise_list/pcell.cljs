@@ -27,21 +27,29 @@
 (defn resolve [pcell value]
   (jq/resolve (.-deferred-wrapping-cell pcell) value))
 
+; Temporary functions attempting to remove any closing over
+(defn kittens [first-deferred]
+  (fn [cell] (jq/resolve first-deferred (first cell))))
+
+(defn squirrels [rest-deferred]
+  (fn [rest-cell] (jq/resolve rest-deferred rest-cell)))
+
+(defn ducklings [rest-deferred]
+  (fn [cell]
+    (let [tail (rest cell)]
+      (if (empty? tail)
+        (jq/resolve rest-deferred nil)
+        (done (rest cell) (squirrels rest-deferred))))))
+
 (extend-type DCell
   ISeq
   (-first [pcell]
     (let [first-deferred (jq/$deferred)]
-      (done pcell (fn [cell]
-        (jq/resolve first-deferred (first cell))))
+      (done pcell (kittens first-deferred))
       (jq/promise first-deferred)))
   (-rest [pcell]
     (let [rest-deferred (jq/$deferred)]
-      (done pcell (fn [cell]
-        (let [tail (rest cell)]
-          (if (empty? tail)
-            (jq/resolve rest-deferred nil)
-            (done (rest cell) (fn [rest-cell]
-                                (jq/resolve rest-deferred rest-cell)))))))
+      (done pcell (ducklings rest-deferred))
       (DCell. rest-deferred)))
   
   ISeqable
