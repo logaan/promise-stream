@@ -3,10 +3,11 @@
 ;; The promise-list.plist namespace contains the public API.
 (ns promise-list.example
   (:use [promise-list.plist :only
-         [open-plist closed-plist append! promise close! fmap]]
+         [open-plist closed-plist append! promise close! fmap mapd*]]
         [jayq.core :only [done]]
         [jayq.util :only [log]])
-  (:require [clojure.core.reducers :as r]))
+  (:require [clojure.core.reducers :as r])
+  (:use-macros [promise-list.macros :only [for-plist]]))
 
 ;; Promise lists are used to represent sequences of data that may not exist
 ;; yet. They serve the same purpose as blocking lazy sequences in Clojure.
@@ -87,11 +88,31 @@
 
   ;;  (reduce (fmap +) (map (fmap inc) (closed-plist 1 2 3 4)))
 
-  ;; So you must instead use the reducers framework's version of map:
+  ;; So you must instead use the reducers library's version of map:
 
   (done (reduce (fmap +) (r/map (fmap inc) (closed-plist 1 2 3 4)))
         #(log "reduced: " %))
 
-)
+  ;; This works because the reducers version of map gets passed `+` and returns
+  ;; a new version of `+` where each of the arguments to it have been run
+  ;; through `inc`.
 
+  ;; It's somewhat inconvenient to use the reducers as they must always end in
+  ;; a call to reduce. So promise-list has convenience versions of common
+  ;; sequence functions defined that will terminate correctly. Here we use
+  ;; mapd* which automaticlaly wraps your return value in a promise:
+
+  (done (first (mapd* inc (closed-plist 1 2 3 4))) #(log "mapd*: " %))
+
+  ;; Finally there is a `for` like macro that will work across promise lists.
+  
+  (done
+    (reduce (fmap conj) (promise [])
+            (for-plist [a (closed-plist 1 2 3)
+                        b (closed-plist 4 5 6)
+                        v (closed-plist a b)]
+                       v))
+    (comp log clj->js))
+  
+)
 
