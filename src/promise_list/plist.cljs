@@ -2,6 +2,10 @@
   (:require [promise-list.pcell :as pc]
             [jayq.core :as jq]))
 
+(def promise pc/deferred)
+
+(def fmap pc/dapply)
+
 (defn closed-plist [& values]
   (reduce #(pc/closed-cell %2 %1) (pc/empty-cell) (reverse values)))
 
