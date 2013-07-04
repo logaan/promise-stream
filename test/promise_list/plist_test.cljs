@@ -6,7 +6,7 @@
   (:require [jayq.core :as jq]
             [promise-list.pcell :as pc]
             [clojure.core.reducers :as r]))
-(comment
+
 ; plist
 (jq/done (first (rest (closed-plist 1 2 3))) #(assert (= 2 %)))
 
@@ -97,4 +97,4 @@
             (inc n))
        (reduce (pc/dapply +)))
   #(assert (= 14 %)))
-)
+

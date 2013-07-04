@@ -14,7 +14,7 @@
           (jq/resolve deferred result)))
         (reduce* deferred dtail f dresult))))))
 
-(extend-type pc/DCell
+(extend-type pc/PCell
   IReduce
   (-reduce
     ([coll f]

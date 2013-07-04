@@ -3,6 +3,7 @@
         [jayq.core :only [$ on val text remove append]]
         [promise-list.pcell :only [deferred]]
         [promise-list.plist :only [with-open-plist append! map* mapd* concat*]]))
+
 (defn timestamp []
   (.valueOf (js/Date.)))
 
@@ -30,7 +31,7 @@
   v)
 
 (defn perform-search [query]
-  (js/jQuery.getJSON (str "http://api.flickr.com/services/rest/?method=flickr.groups.search&api_key=d954ec3a5e2ac31e73ad2a256a8436c0&text=" query "&per_page=10&format=json&jsoncallback=?")))
+  (js/jQuery.getJSON (str "http://api.flickr.com/services/rest/?method=flickr.groups.search&api_key=d0af58f029a5f747bb490842f33b9a8a&text=" query "&per_page=10&format=json&jsoncallback=?")))
 
 (defn group-names [response]
   (if-let [groups (aget response "groups")]
@@ -43,30 +44,30 @@
   (remove ($ "#results li"))
   (mapv #(append ($ :#results) (str "<li>" % "</li>")) results))
 
-(comment
-  (fn []
-   (let [changes   (event-list ($ :#query) "change")
-         keyups    (event-list ($ :#query) "keyup")
-         events    (concat* changes keyups)
-         queries   (mapd* (comp :value summarise) events)
-         responses (map*  perform-search queries)
-         groups    (mapd* group-names responses)]
-     (mapd* set-query-title!  queries)
-     (mapd* transparent-log events)
-     (mapd* set-results-list! groups))))
+
+((fn []
+  (let [changes   (event-list ($ :#query) "change")
+        keyups    (event-list ($ :#query) "keyup")
+        events    (concat* changes keyups)
+        queries   (mapd* (comp :value summarise) events)
+        responses (map*  perform-search queries)
+        groups    (mapd* group-names responses)]
+    (mapd* set-query-title!  queries)
+    (mapd* transparent-log events)
+    (mapd* set-results-list! groups))))
 
 ; Memory leak tests
 (comment
-  (fn []
-   (let [threes (metranome 300)
-         fives  (metranome 500)
-         all    (concat* threes fives)
-         times  (mapd* (comp str :time) all)]
-     (mapd* set-query-title! times))))
+  ((fn []
+     (let [threes (metranome 300)
+           fives  (metranome 500)
+           all    (concat* threes fives)
+           times  (mapd* (comp str :time) all)]
+       (mapd* set-query-title! times))))
 
-(comment (fn []
-   (let [clock (metranome 200)]
-     (mapd* identity clock))))
+  ((fn []
+     (let [clock (metranome 200)]
+       (mapd* identity clock))))
 
-(comment (js/window.setInterval (fn [] (+ 1 1)) 200))
+  ((js/window.setInterval (fn [] (+ 1 1)) 200)))
 

@@ -4,13 +4,13 @@
 (defn deferred [value]
   (jq/resolve (jq/$deferred) value))
 
-(deftype DCell [deferred-wrapping-cell])
+(deftype PCell [deferred-wrapping-cell])
 
 (defn closed-container [v]
-  (DCell. (deferred v)))
+  (PCell. (deferred v)))
 
 (defn open-container []
-  (DCell. (jq/$deferred)))
+  (PCell. (jq/$deferred)))
 
 (defn empty-cell []
   (closed-container nil))
@@ -27,7 +27,7 @@
 (defn resolve [pcell value]
   (jq/resolve (.-deferred-wrapping-cell pcell) value))
 
-(extend-type DCell
+(extend-type PCell
   ISeq
   (-first [pcell]
     (let [first-deferred (jq/$deferred)]
@@ -42,7 +42,7 @@
             (jq/resolve rest-deferred nil)
             (done (rest cell) (fn [rest-cell]
                                 (jq/resolve rest-deferred rest-cell)))))))
-      (DCell. rest-deferred)))
+      (PCell. rest-deferred)))
   
   ISeqable
   (-seq [this] this))
