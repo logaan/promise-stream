@@ -34,6 +34,14 @@ repl, or a watcher that will automatically build.
 
 * Make sure that deferred objects aren't leaked. Instead expose promise
   objects. Only keep the original deferred object for open seqs.
+* Test for stack overflows.
+* Figure out how failures propogate.
+* Replace calls to jQuery deferred objects with protocol methods instead.
+* Check that operations like map and mapcat retain the same order of promises
+  and do not slip into using response-time ordering.
+* Add a function that will transform a seq into resposne-time ordering.
+* Add to the quick search example rate limits on typed characters and order
+  limits on rendering of results.
 
 ## License
 
