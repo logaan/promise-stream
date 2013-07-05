@@ -1,9 +1,9 @@
 ;; This walkthrough introduces the core concepts of promise lists.
 
 ;; The promise-list.plist namespace contains the public API.
-(ns promise-list.example
+(ns promise-list.walkthrough
   (:use [promise-list.plist :only
-         [open-plist closed-plist append! promise close! fmap mapd*]]
+         [open-plist closed-plist append! promise close! fmap mapd* map*]]
         [jayq.core :only [done]]
         [jayq.util :only [log]])
   (:require [clojure.core.reducers :as r])
@@ -115,4 +115,6 @@
     (comp log clj->js))
   
 )
+
+(map* (comp promise log) (apply closed-plist (range 10000)))
 
