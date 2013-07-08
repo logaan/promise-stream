@@ -116,5 +116,3 @@
   
 )
 
-(map* (comp promise log) (apply closed-plist (range 10000)))
-

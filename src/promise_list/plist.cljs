@@ -6,8 +6,11 @@
 
 (def fmap pc/dapply)
 
-(defn closed-plist [& values]
-  (reduce #(pc/closed-cell %2 %1) (pc/empty-cell) (reverse values)))
+(defn closed-plist
+  "Returns a read only promise list containing args. Mapping directly over a
+  closed plist will cause a stack overflow if it contains more than 1k values."
+  [& args]
+  (reduce #(pc/closed-cell %2 %1) (pc/empty-cell) (reverse args)))
 
 (defn reduce* [deferred coll f daccumulator]
   (let [dresult (f daccumulator (first coll))

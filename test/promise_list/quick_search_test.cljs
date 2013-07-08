@@ -2,7 +2,8 @@
   (:use [jayq.util :only [log]]
         [jayq.core :only [$ on val text remove append]]
         [promise-list.pcell :only [deferred]]
-        [promise-list.plist :only [with-open-plist append! map* mapd* concat*]]))
+        [promise-list.plist :only
+         [with-open-plist closed-plist append! map* mapd* concat*]]))
 
 (defn timestamp []
   (.valueOf (js/Date.)))
@@ -70,4 +71,10 @@
        (mapd* identity clock))))
 
   ((js/window.setInterval (fn [] (+ 1 1)) 200)))
+
+; Stack overflow tests
+(comment
+  (mapd* (comp log :time) (metranome 1)))
+
+(comment (mapd* inc (apply closed-plist (range 1200))))
 

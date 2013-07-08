@@ -34,7 +34,6 @@ repl, or a watcher that will automatically build.
 
 * Make sure that deferred objects aren't leaked. Instead expose promise
   objects. Only keep the original deferred object for open seqs.
-* Test for stack overflows.
 * Figure out how failures propogate.
 * Replace calls to jQuery deferred objects with protocol methods instead.
 * Check that operations like map and mapcat retain the same order of promises
