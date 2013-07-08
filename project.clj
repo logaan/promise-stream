@@ -7,7 +7,11 @@
                  [jayq "2.3.0"]]
   :plugins [[lein-cljsbuild "0.3.0"]] 
   :cljsbuild {
-    :builds [{:source-paths ["src" "test"]
-              :compiler {:output-to "resources/public/js/main.js"
-                         :optimizations :whitespace
-                         :pretty-print true}}]})
+    :builds {
+      :dev {:source-paths ["src" "test"]
+            :compiler {:output-to "resources/public/js/main.js"}}
+      :prod {:source-paths ["src"]
+             :compiler {:output-to "resources/public/js/main.min.js"
+                        :externs  ["externs/jquery-1.9.js"]
+                        :pretty-print false
+                        :optimizations :advanced}}}})
