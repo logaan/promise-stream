@@ -1,19 +1,33 @@
 #!/usr/bin/env node
 
-var http = require('http');
+var http = require('http'),
+    fs   = require('fs');
 
 http.createServer(function (req, res) {
-  res.writeHead(200, {'Content-Type': 'text/plain'});
+  res.writeHead(200, {'Content-Type': 'text/html'});
 
   switch(req.url) {
+    case "/":
+      fs.readFile('resources/public/index.html', function(err, data) {
+        if (err) throw err;
+        res.end(data);
+      });
+      break;
     case "/slow":
       setTimeout(function() {
-        res.end('Hello Tortoise\n');
+        res.end('slow');
       }, 1000);
       break;
     case "/fast":
-      res.end('Hello Cheetah\n');
+      res.end('fast');
       break;
+    default:
+      fs.readFile('resources/public' + req.url, function(err, data) {
+        if (err) console.log(err);
+        res.end(data);
+      });
+      break;
+
   }
 }).listen(1337, '127.0.0.1');
 
