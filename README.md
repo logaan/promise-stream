@@ -32,9 +32,6 @@ repl, or a watcher that will automatically build.
 
 ## Roadmap
 
-* Check that mapcat retains the same order of promises and do not slip into
-  using response-time ordering.
-* Add a function that will transform a plsit into resposne-time ordering.
 * Add to the quick search example rate limits on typed characters and order
   limits on rendering of results.
 * Figure out how failures propogate.
