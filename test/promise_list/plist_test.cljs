@@ -2,7 +2,7 @@
   (:use-macros [promise-list.macros :only [for-plist]])
   (:use [promise-list.plist :only
          [closed-plist open-plist append! close! reduce* map* mapd* concat*
-          with-open-plist resolve-order-map* mapcat* count*]]
+          with-open-plist resolve-order-map* mapcat* count* resolves-within?]]
         [jayq.util :only [log]])
   (:require [jayq.core :as jq]
             [promise-list.pcell :as pc]
@@ -59,6 +59,9 @@
                      (resolve-order-map* js/jQuery.get))]
   (jq/done (first responses) #(assert (= "fast" %)))
   (jq/done (first (rest responses)) #(assert (= "slow" %))))
+
+(jq/done (resolves-within? (closed-plist) 1) #(assert %))
+(jq/done (resolves-within? (first (open-plist)) 1) #(assert (not %)))
 
 ; Should maintain original order
 (comment (let [responses (->> (closed-plist "/slow" "/fast")
