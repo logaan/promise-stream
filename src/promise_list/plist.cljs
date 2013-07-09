@@ -64,10 +64,16 @@
     (f writer)
     reader))
 
-; These two generate functions to avoid having them close over the heads of
-; lists.
+; These three generate functions to avoid having them close over the heads of
+; lists and cause a memory leak.
 (defn modifying-appender [writer f]
   (fn [v] (append! writer (f v))))
+
+(defn resolve-order-modifying-appender [writer f close]
+  (fn [v]
+    (jq/done (f v) (fn [r]
+      (append! writer (promise r))
+      (close)))))
 
 (defn closer [writer]
   (fn [] (close! writer)))
@@ -102,6 +108,11 @@
 
 (defn count* [coll]
   (reduce (pc/dapply (fn [tally v] (inc tally))) (pc/deferred 0) coll))
+
+(defn resolve-order-map* [f coll]
+  (with-open-plist (fn [writer]
+    (co-operative-close (count* coll) writer (fn [close]
+    (traverse coll (resolve-order-modifying-appender writer f close) identity))))))
 
 (defn mapcat* [f coll]
   (with-open-plist (fn [writer]
