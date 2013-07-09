@@ -122,10 +122,10 @@
                 (traverse inner-list (modifying-appender writer pc/deferred) close))
               list-of-lists)))))))
 
-(defn resolves-within? [plist timeout]
+(defn resolves-within? [timeout coll]
   (let [result (jq/$deferred)]
     (js/setTimeout #(jq/resolve result false) timeout)
-    (pc/done plist #(jq/resolve result true))
+    (pc/done coll #(jq/resolve result true))
     result))
 
 (def plist-m
