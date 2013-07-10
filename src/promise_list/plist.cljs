@@ -2,8 +2,10 @@
   (:require [promise-list.pcell :as pc]
             [jayq.core :as jq]))
 
+; Misleading as it's just returning a resolved deferred.
 (def promise pc/deferred)
 
+; Misleading as it's fmap within the promise domain, not plist.
 (def fmap pc/dapply)
 
 (defn closed-plist
@@ -12,7 +14,9 @@
   [& args]
   (reduce #(pc/closed-cell %2 %1) (pc/empty-cell) (reverse args)))
 
-(defn reduce* [deferred coll f daccumulator]
+(defn reduce*
+  "Not intended to be used directly. Instead use IReduce's -reduce."
+  [deferred coll f daccumulator]
   (let [dresult (f daccumulator (first coll))
         dtail   (rest coll)]
     (pc/done dtail (fn [tail]

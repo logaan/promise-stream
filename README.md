@@ -32,6 +32,9 @@ repl, or a watcher that will automatically build.
 
 ## Roadmap
 
+* Add a function that will take a function that takes a callback and has it
+  return a promise list with all of the values passed to the callback. Like
+  `(plistify jayq/on ($ :button) "click")`.
 * Add to the quick search example rate limits on typed characters and order
   limits on rendering of results.
 * Figure out how failures propogate.
