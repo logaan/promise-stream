@@ -161,6 +161,21 @@
   (with-open-plist (fn [writer]
     (traverse coll (conditional-adder pred writer) (closer writer)))))
 
+(defn rests*
+  "Returns a plist containing coll, followed by (rest coll) then (rest (rest
+  coll)) etc."
+  ([coll]
+  (with-open-plist (fn [writer]
+    (append! writer (promise coll))
+    (rests* writer coll))))
+  ([writer coll]
+   (pc/done coll (fn [cell]
+     (if (empty? cell)
+       (close! writer)
+       (let [tail (rest cell)]
+         (append! writer (promise tail))
+         (rests* writer tail)))))))
+
 (defn kittens [timeout]
   ; This isn't getting called with futures
   (fn [[fv fnext]]

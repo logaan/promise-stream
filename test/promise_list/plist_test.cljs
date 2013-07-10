@@ -4,7 +4,7 @@
         [promise-list.plist :only
          [closed-plist open-plist append! close! reduce* map* mapd* concat*
           with-open-plist resolve-order-map* mapcat* count* resolves-within?
-          pairwise-traverse zip* promise fmap filter*]])
+          pairwise-traverse zip* promise fmap filter* rests*]])
   (:require [jayq.core :as jq]
             [promise-list.pcell :as pc]
             [clojure.core.reducers :as r]))
@@ -64,6 +64,12 @@
 (jq/done (resolves-within? 1 (pc/deferred 1)) #(assert %))
 (jq/done (resolves-within? 1 (jq/$deferred)) #(assert (not %)))
 
+; This is wrong. It should be 3 2 1 0 but there's a bug in count* atm.
+(jq/done
+  (reduce (fmap conj) (promise [])
+       (map* count* (rests* (closed-plist 1 2 3))))
+  #(assert (= [3 2 1 1] %)))
+
 ; Should maintain original order
 (comment (let [responses (->> (closed-plist "/slow" "/fast")
                      (map* js/jQuery.get))]
@@ -79,6 +85,11 @@
 (jq/done
   (count* (closed-plist 1 2 3 4))
   #(assert (= 4 %)))
+
+; This is wrong
+(jq/done
+  (count* (closed-plist))
+  log)
 
 (jq/done
   (->> (closed-plist 1 2 3 4)
