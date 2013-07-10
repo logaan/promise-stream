@@ -16,7 +16,7 @@
   v)
 
 (defn perform-search [query]
-  (js/jQuery.getJSON (str "http://api.flickr.com/services/rest/?method=flickr.groups.search&api_key=d0af58f029a5f747bb490842f33b9a8a&text=" query "&per_page=10&format=json&jsoncallback=?")))
+  (js/jQuery.getJSON (str "http://api.flickr.com/services/rest/?method=flickr.groups.search&api_key=a567ef852bac562934904a2a0b548a5b&text=" query "&per_page=10&format=json&jsoncallback=?")))
 
 (defn group-names [response]
   (if-let [groups (aget response "groups")]
@@ -29,17 +29,15 @@
   (remove ($ "#results li"))
   (mapv #(append ($ :#results) (str "<li>" % "</li>")) results))
 
-
 ((fn []
   (let [changes   (event-list ($ :#query) "change")
         keyups    (event-list ($ :#query) "keyup")
         events    (concat* changes keyups)
         queries   (mapd* (comp :value summarise) events)
-        throttled (throttle* 1000 queries)
-        responses (map*  perform-search queries)
+        throttled (throttle* 200 queries)
+        responses (map*  perform-search throttled)
         groups    (mapd* group-names responses)]
-    (mapd* set-query-title!  queries)
-    (mapd* transparent-log   throttled)
+    (mapd* set-query-title!  throttled)
     (mapd* set-results-list! groups))))
 
 ; Memory leak tests

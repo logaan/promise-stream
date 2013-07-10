@@ -135,10 +135,10 @@
                 (traverse inner-list (modifying-appender writer pc/deferred) close))
               list-of-lists)))))))
 
-(defn resolves-within? [timeout promise]
+(defn resolves-within? [timeout plist]
   (let [result (jq/$deferred)]
     (js/setTimeout #(jq/resolve result false) timeout)
-    (jq/done promise #(jq/resolve result true))
+    (pc/done plist #(jq/resolve result true))
     result))
 
 (defn pair-adder [writer]
@@ -177,13 +177,11 @@
          (rests* writer tail)))))))
 
 (defn kittens [timeout]
-  ; This isn't getting called with futures
-  (fn [[fv fnext]]
-    (js/console.log fv fnext)
-    (not (resolves-within? timeout fnext))))
+  (fn [[v tail]]
+   ((fmap not) (resolves-within? timeout tail))))
 
 (defn throttle* [timeout coll]
-  (filter* (kittens timeout) (zip* coll (rest coll))))
+  (mapd* first (filter* (kittens timeout) (zip* coll (rest (rests* coll))))))
 
 (def plist-m
   {:return closed-plist

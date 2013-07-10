@@ -61,8 +61,8 @@
   (jq/done (first responses) #(assert (= "fast" %)))
   (jq/done (first (rest responses)) #(assert (= "slow" %))))
 
-(jq/done (resolves-within? 1 (pc/deferred 1)) #(assert %))
-(jq/done (resolves-within? 1 (jq/$deferred)) #(assert (not %)))
+(jq/done (resolves-within? 1 (closed-plist 1)) #(assert %))
+(jq/done (resolves-within? 1 (first (open-plist))) #(assert (not %)))
 
 ; This is wrong. It should be 3 2 1 0 but there's a bug in count* atm.
 (jq/done
