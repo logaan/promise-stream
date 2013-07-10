@@ -135,12 +135,7 @@
                 (traverse inner-list (modifying-appender writer pc/deferred) close))
               list-of-lists)))))))
 
-(defn resolves-within? [timeout plist]
-  (let [result (jq/$deferred)]
-    (js/setTimeout #(jq/resolve result false) timeout)
-    (pc/done plist #(jq/resolve result true))
-    result))
-
+; Exists to avoid closing over coll
 (defn pair-adder [writer]
   (fn [v1 v2]
     (append! writer (promise (list v1 v2)))))
@@ -149,6 +144,7 @@
   (with-open-plist (fn [writer]
     (traverse coll1 coll2 (pair-adder writer) (closer writer)))))
 
+; Exists to avoid closing over coll
 (defn conditional-adder [pred writer]
   (fn [v]
     (jq/done (pred v) (fn [passes?]
@@ -165,9 +161,9 @@
   "Returns a plist containing coll, followed by (rest coll) then (rest (rest
   coll)) etc."
   ([coll]
-  (with-open-plist (fn [writer]
-    (append! writer (promise coll))
-    (rests* writer coll))))
+   (with-open-plist (fn [writer]
+     (append! writer (promise coll))
+     (rests* writer coll))))
   ([writer coll]
    (pc/done coll (fn [cell]
      (if (empty? cell)
@@ -176,12 +172,19 @@
          (append! writer (promise tail))
          (rests* writer tail)))))))
 
-(defn resolve-after? [timeout]
+(defn resolves-within? [timeout plist]
+  (let [result (jq/$deferred)]
+    (js/setTimeout #(jq/resolve result false) timeout)
+    (pc/done plist #(jq/resolve result true))
+    result))
+
+; Exists to avoid closing voer coll
+(defn after-resolver [timeout]
   (fn [[v tail]]
    ((fmap not) (resolves-within? timeout tail))))
 
 (defn throttle* [timeout coll]
-  (mapd* first (filter* (resolve-after? timeout) (zip* coll (rest (rests* coll))))))
+  (mapd* first (filter* (after-resolver timeout) (zip* coll (rest (rests* coll))))))
 
 (def plist-m
   {:return closed-plist
