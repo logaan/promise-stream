@@ -176,12 +176,12 @@
          (append! writer (promise tail))
          (rests* writer tail)))))))
 
-(defn kittens [timeout]
+(defn resolve-after? [timeout]
   (fn [[v tail]]
    ((fmap not) (resolves-within? timeout tail))))
 
 (defn throttle* [timeout coll]
-  (mapd* first (filter* (kittens timeout) (zip* coll (rest (rests* coll))))))
+  (mapd* first (filter* (resolve-after? timeout) (zip* coll (rest (rests* coll))))))
 
 (def plist-m
   {:return closed-plist
