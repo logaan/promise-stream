@@ -1,9 +1,9 @@
 (ns promise-list.plist-test
   (:use-macros [promise-list.macros :only [for-plist]])
-  (:use [promise-list.plist :only
+  (:use [jayq.util :only [log]] 
+        [promise-list.plist :only
          [closed-plist open-plist append! close! reduce* map* mapd* concat*
-          with-open-plist resolve-order-map* mapcat* count* resolves-within?]]
-        [jayq.util :only [log]])
+          with-open-plist resolve-order-map* mapcat* count* resolves-within?]])
   (:require [jayq.core :as jq]
             [promise-list.pcell :as pc]
             [clojure.core.reducers :as r]))
@@ -60,8 +60,8 @@
   (jq/done (first responses) #(assert (= "fast" %)))
   (jq/done (first (rest responses)) #(assert (= "slow" %))))
 
-(jq/done (resolves-within? 1 (closed-plist)) #(assert %))
-(jq/done (resolves-within? 1 (first (open-plist))) #(assert (not %)))
+(jq/done (resolves-within? 1 (pc/deferred 1)) #(assert %))
+(jq/done (resolves-within? 1 (jq/$deferred)) #(assert (not %)))
 
 ; Should maintain original order
 (comment (let [responses (->> (closed-plist "/slow" "/fast")

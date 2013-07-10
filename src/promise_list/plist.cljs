@@ -126,11 +126,18 @@
                 (traverse inner-list (modifying-appender writer pc/deferred) close))
               list-of-lists)))))))
 
-(defn resolves-within? [timeout coll]
+(defn resolves-within? [timeout promise]
   (let [result (jq/$deferred)]
     (js/setTimeout #(jq/resolve result false) timeout)
-    (pc/done coll #(jq/resolve result true))
+    (jq/done promise #(jq/resolve result true))
     result))
+
+;; Traverse coll
+;;   Append each value
+;;   Unless a new value arrives before timeout
+(defn throttle [timeout coll]
+  (with-open-plist (fn [writer]
+    )))
 
 (def plist-m
   {:return closed-plist
