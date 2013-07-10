@@ -34,7 +34,7 @@
         keyups    (event-list ($ :#query) "keyup")
         events    (concat* changes keyups)
         queries   (mapd* (comp :value summarise) events)
-        throttled (throttle* 200 queries)
+        throttled (throttle* 400 queries)
         responses (map*  perform-search throttled)
         groups    (mapd* group-names responses)]
     (mapd* set-query-title!  throttled)
