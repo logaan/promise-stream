@@ -2,7 +2,7 @@
   (:use [jayq.util            :only [log]]
         [jayq.core            :only [$ text remove append]]
         [promise-list.sources :only [metranome event-list]]
-        [promise-list.plist   :only [closed-plist map* mapd* concat*]]))
+        [promise-list.plist   :only [closed-plist map* mapd* concat* throttle*]]))
 
 (defn summarise [event]
   (let [target (aget event "target")]
@@ -35,10 +35,11 @@
         keyups    (event-list ($ :#query) "keyup")
         events    (concat* changes keyups)
         queries   (mapd* (comp :value summarise) events)
+        throttled (throttle* 1000 queries)
         responses (map*  perform-search queries)
         groups    (mapd* group-names responses)]
     (mapd* set-query-title!  queries)
-    (mapd* transparent-log   queries)
+    (mapd* transparent-log   throttled)
     (mapd* set-results-list! groups))))
 
 ; Memory leak tests

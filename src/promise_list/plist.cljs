@@ -161,11 +161,14 @@
   (with-open-plist (fn [writer]
     (traverse coll (conditional-adder pred writer) (closer writer)))))
 
-;; Traverse coll
-;;   Append each value
-;;   Unless a new value arrives before timeout
-(defn throttle [timeout coll]
-  (zip* coll (rest coll)))
+(defn kittens [timeout]
+  ; This isn't getting called with futures
+  (fn [[fv fnext]]
+    (js/console.log fv fnext)
+    (not (resolves-within? timeout fnext))))
+
+(defn throttle* [timeout coll]
+  (filter* (kittens timeout) (zip* coll (rest coll))))
 
 (def plist-m
   {:return closed-plist
