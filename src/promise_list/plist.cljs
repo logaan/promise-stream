@@ -52,25 +52,25 @@
 (defn close! [writer]
   (pc/resolve (deref writer) nil))
 
+; Can probably abstract away the variable column thing
 (defn traverse
   "vf will be called with every value. ef will be called at the end of the
   list."
-  [coll vf ef]
+  ([coll vf ef]
    (pc/done coll (fn [cell]
      (if (empty? cell)
        (ef)
        (do 
          (vf (first cell))
          (traverse (rest cell) vf ef))))))
-
-(defn pairwise-traverse [coll1 coll2 vf ef]
-  (pc/done coll1 (fn [cell1]
-    (pc/done coll2 (fn [cell2]
-      (if (or (empty? cell1) (empty? cell2))
-        (ef)
-        (do
-          (vf (first cell1) (first cell2))
-          (pairwise-traverse (rest coll1) (rest coll2) vf ef))))))))
+  ([coll1 coll2 vf ef]
+    (pc/done coll1 (fn [cell1]
+      (pc/done coll2 (fn [cell2]
+        (if (or (empty? cell1) (empty? cell2))
+          (ef)
+          (do
+            (vf (first cell1) (first cell2))
+            (traverse (rest coll1) (rest coll2) vf ef)))))))))
 
 (defn with-open-plist [f]
   (let [[reader writer] (open-plist)]
@@ -147,14 +147,13 @@
 
 (defn zip* [coll1 coll2]
   (with-open-plist (fn [writer]
-    (pairwise-traverse coll1 coll2 (pair-adder writer) (closer writer)))))
+    (traverse coll1 coll2 (pair-adder writer) (closer writer)))))
 
 ;; Traverse coll
 ;;   Append each value
 ;;   Unless a new value arrives before timeout
 (defn throttle [timeout coll]
-  (with-open-plist (fn [writer]
-    )))
+  (zip* coll (rest coll)))
 
 (def plist-m
   {:return closed-plist
