@@ -1,24 +1,8 @@
 (ns promise-list.quick-search-test
-  (:use [jayq.util :only [log]]
-        [jayq.core :only [$ on val text remove append]]
-        [promise-list.pcell :only [deferred]]
-        [promise-list.plist :only
-         [with-open-plist closed-plist append! map* mapd* concat*]]))
-
-(defn timestamp []
-  (.valueOf (js/Date.)))
-
-(defn metranome [interval]
-  (with-open-plist (fn [writer]
-    (js/window.setInterval
-      #(append! writer (deferred {:time (timestamp)}))
-      interval))))
-
-(defn event-list [element event-type]
-  (with-open-plist (fn [writer]
-    (on element event-type (fn [event]
-      (append! writer (deferred event))
-      (.preventDefault event))))))
+  (:use [jayq.util            :only [log]]
+        [jayq.core            :only [$ text remove append]]
+        [promise-list.sources :only [metranome event-list]]
+        [promise-list.plist   :only [closed-plist map* mapd* concat*]]))
 
 (defn summarise [event]
   (let [target (aget event "target")]
