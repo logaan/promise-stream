@@ -63,6 +63,15 @@
          (vf (first cell))
          (traverse (rest cell) vf ef))))))
 
+(defn pairwise-traverse [coll1 coll2 vf ef]
+  (pc/done coll1 (fn [cell1]
+    (pc/done coll2 (fn [cell2]
+      (if (or (empty? cell1) (empty? cell2))
+        (ef)
+        (do
+          (vf (first cell1) (first cell2))
+          (pairwise-traverse (rest coll1) (rest coll2) vf ef))))))))
+
 (defn with-open-plist [f]
   (let [[reader writer] (open-plist)]
     (f writer)
@@ -131,6 +140,14 @@
     (js/setTimeout #(jq/resolve result false) timeout)
     (jq/done promise #(jq/resolve result true))
     result))
+
+(defn pair-adder [writer]
+  (fn [v1 v2]
+    (append! writer (promise (list v1 v2)))))
+
+(defn zip* [coll1 coll2]
+  (with-open-plist (fn [writer]
+    (pairwise-traverse coll1 coll2 (pair-adder writer) (closer writer)))))
 
 ;; Traverse coll
 ;;   Append each value
