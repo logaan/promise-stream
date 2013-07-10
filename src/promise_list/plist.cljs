@@ -149,6 +149,18 @@
   (with-open-plist (fn [writer]
     (traverse coll1 coll2 (pair-adder writer) (closer writer)))))
 
+(defn conditional-adder [pred writer]
+  (fn [v]
+    (jq/done (pred v) (fn [passes?]
+      (if passes? (append! writer (promise v)))))))
+
+(defn filter*
+  "returns a new plist of values from coll for which pred returns truthy. pred
+  must take a concrete value and return a promise. coll is a plist."
+  [pred coll]
+  (with-open-plist (fn [writer]
+    (traverse coll (conditional-adder pred writer) (closer writer)))))
+
 ;; Traverse coll
 ;;   Append each value
 ;;   Unless a new value arrives before timeout

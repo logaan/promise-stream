@@ -4,7 +4,7 @@
         [promise-list.plist :only
          [closed-plist open-plist append! close! reduce* map* mapd* concat*
           with-open-plist resolve-order-map* mapcat* count* resolves-within?
-          pairwise-traverse zip* promise fmap]])
+          pairwise-traverse zip* promise fmap filter*]])
   (:require [jayq.core :as jq]
             [promise-list.pcell :as pc]
             [clojure.core.reducers :as r]))
@@ -90,6 +90,11 @@
   (reduce (fmap conj) (promise [])
           (zip* (closed-plist 1 2 3) (closed-plist 4 5 6)))
   #(assert (= '[(1 4) (2 5) (3 6)] %)))
+
+(jq/done
+  (reduce (fmap conj) (promise [])
+          (filter* (comp promise odd?) (closed-plist 1 2 3 4)))
+  #(assert (= [1 3] %)))
 
 ; Reducers
 ; I think the only reason this is passing is because of nil + nil = 0 in cljs
