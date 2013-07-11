@@ -1,7 +1,20 @@
 (ns promise-list.timing-aware
-  (:use [promise-list.plist   :only
-         [closed-plist map* mapd* concat* throttle* resolve-order-map*
-          reductions* fmap promise filter*]]))
+  (:use [promise-list.plist :only
+         [with-open-plist co-operative-close count* traverse closed-plist map*
+          mapd* concat* throttle* reductions* fmap promise
+          filter* append!]])
+  (:require [jayq.core :as jq]))
+
+(defn resolve-order-modifying-appender [writer f close]
+  (fn [v]
+    (jq/done (f v) (fn [r]
+      (append! writer (promise r))
+      (close)))))
+
+(defn resolve-order-map* [f coll]
+  (with-open-plist (fn [writer]
+    (co-operative-close (count* coll) writer (fn [close]
+    (traverse coll (resolve-order-modifying-appender writer f close) identity))))))
 
 (defn most-recently-requested-with-current [{mrr :mrr} current]
   (if (< (:originalTime mrr) (:originalTime current))

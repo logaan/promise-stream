@@ -3,7 +3,7 @@
   (:use [jayq.util :only [log]] 
         [promise-list.plist :only
          [closed-plist open-plist append! close! reduce* map* mapd* concat*
-          with-open-plist resolve-order-map* mapcat* count* resolves-within?
+          with-open-plist mapcat* count* resolves-within?
           pairwise-traverse zip* promise fmap filter* rests* reductions*]])
   (:require [jayq.core :as jq]
             [promise-list.pcell :as pc]
@@ -55,11 +55,6 @@
 ; Should order by resolution
 (let [plist (with-open-plist (fn [writer] nil))]
   (jq/done (first plist) #(assert false)))
-
-(let [responses (->> (closed-plist "/slow" "/fast")
-                     (resolve-order-map* js/jQuery.get))]
-  (jq/done (first responses) #(assert (= "fast" %)))
-  (jq/done (first (rest responses)) #(assert (= "slow" %))))
 
 (jq/done (resolves-within? 1 (closed-plist 1)) #(assert %))
 (jq/done (resolves-within? 1 (first (open-plist))) #(assert (not %)))

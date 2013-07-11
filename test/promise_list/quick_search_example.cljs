@@ -3,8 +3,8 @@
         [jayq.core            :only [$ text remove append]]
         [promise-list.sources :only [metranome event-list]]
         [promise-list.plist   :only
-         [closed-plist map* mapd* concat* throttle* resolve-order-map*]]
-        [promise-list.timing-aware :only [keep-most-recently-requested]])
+         [closed-plist map* mapd* concat* throttle*]]
+        [promise-list.timing-aware :only [resolve-order-map* keep-most-recently-requested]])
   (:require [jayq.core :as jq]))
 
 (defn summarise [event]
