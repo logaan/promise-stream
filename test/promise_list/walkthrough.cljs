@@ -31,16 +31,16 @@
 
   ;; Promises may then be read from the list:
 
-  (done (first reader) #(log "first: " %))
+  (done (first reader) #(assert (= "puppies" %)))
 
   ;; Reading a promise does not consume it, or mutate the list in any way. We
   ;; can ask the same question and receive the same answer:
 
-  (done (first reader) #(log "first (again): " %))
+  (done (first reader) #(assert (= "puppies" %)))
 
   ;; Promises may be pulled from beyond the end of the list:
 
-  (done (nth reader 1) #(log "second: " %))
+  (done (nth reader 1) #(assert (= "ducklings" %)))
 
   ;; The promise will resolve once a value is added:
 
@@ -54,7 +54,7 @@
   ;; You can still request values beyond the end of the list, but those values
   ;; will be nil (just like with a normal list or vector):
 
-  (done (nth reader 2) #(log "after close nil?: " (nil? %)))
+  (done (nth reader 2) #(assert (nil? %)))
 
   ;; It is possible for a promise list to be closed before producing any
   ;; values, representing an empty list.
@@ -63,7 +63,7 @@
   ;; closed-plist. This is useful for testing and for functions like mapcat*
   ;; that expect a plist.
 
-  (done (first (closed-plist "owlet")) #(log "closed plist: " %))
+  (done (first (closed-plist "owlet")) #(assert (= "owlet" %)))
 
   ;; We've been able to use `first` and `nth` because plists implement the
   ;; `ISeq` protocol. This also gives us collection operations like map and
@@ -74,7 +74,7 @@
          (map (fmap #(str "baby " %)))
          rest
          first)
-    #(log "mapped: " %))
+    #(assert (= "baby ducklings" %)))
 
   ;; Here we're also making use of the `fmap` function. This is a convenience
   ;; function that upgrades another function so that it can take and return
@@ -91,7 +91,7 @@
   ;; So you must instead use the reducers library's version of map:
 
   (done (reduce (fmap +) (r/map (fmap inc) (closed-plist 1 2 3 4)))
-        #(log "reduced: " %))
+        #(assert (= 14 %)))
 
   ;; This works because the reducers version of map gets passed `+` and returns
   ;; a new version of `+` where each of the arguments to it have been run
@@ -102,7 +102,7 @@
   ;; sequence functions defined that will terminate correctly. Here we use
   ;; mapd* which automaticlaly wraps your return value in a promise:
 
-  (done (first (mapd* inc (closed-plist 1 2 3 4))) #(log "mapd*: " %))
+  (done (first (mapd* inc (closed-plist 1 2 3 4))) #(assert (= 2 %)))
 
   ;; Finally there is a `for` like macro that will work across promise lists.
   
@@ -112,7 +112,7 @@
                         b (closed-plist 4 5 6)
                         v (closed-plist a b)]
                        v))
-    (comp log clj->js))
+    #(assert (= [1, 4, 1, 5, 1, 6, 2, 4, 2, 5, 2, 6, 3, 4, 3, 5, 3, 6] %)))
   
 )
 
