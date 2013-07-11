@@ -15,5 +15,5 @@
 (defn event-list [element event-type]
   (with-open-plist (fn [writer]
     (on element event-type (fn [event]
-      (append! writer (deferred event))
-      (.preventDefault event))))))
+      (.preventDefault event)      
+      (append! writer (deferred event)))))))

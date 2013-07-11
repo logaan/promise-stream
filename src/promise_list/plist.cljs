@@ -186,6 +186,22 @@
 (defn throttle* [timeout coll]
   (mapd* first (filter* (after-resolver timeout) (zip* coll (rest (rests* coll))))))
 
+; Should this be emitting the first value?
+(defn reductions*
+  ([coll f]
+   (reductions* (rest coll) f (first coll)))
+  ([coll f start]
+   (with-open-plist (fn [writer]
+     (reductions* writer coll f start))))
+  ([writer coll f daccumulator]
+   (let [dresult (f daccumulator (first coll))
+         dtail   (rest coll)]
+     (append! writer dresult)
+     (pc/done dtail (fn [tail]
+       (if (empty? tail)
+         (close! writer)
+         (reductions* writer dtail f dresult)))))))
+
 (def plist-m
   {:return closed-plist
    :bind   #(mapcat* %2 %1)

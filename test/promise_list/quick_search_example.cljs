@@ -2,7 +2,9 @@
   (:use [jayq.util            :only [log]]
         [jayq.core            :only [$ text remove append]]
         [promise-list.sources :only [metranome event-list]]
-        [promise-list.plist   :only [closed-plist map* mapd* concat* throttle*]]))
+        [promise-list.plist   :only
+         [closed-plist map* mapd* concat* throttle* resolve-order-map*]])
+  (:require [jayq.core :as jq]))
 
 (defn summarise [event]
   (let [target (aget event "target")]
@@ -39,6 +41,29 @@
         groups    (mapd* group-names responses)]
     (mapd* set-query-title!  throttled)
     (mapd* set-results-list! groups))))
+
+(def time-and-id
+  (juxt #(.-timeStamp %) #(-> % .-currentTarget .-id)))
+
+(defn request-and-timestamp [[time id]]
+  (let [output   (jq/$deferred)
+        presponse (js/jQuery.get (str "/" id))]
+    (jq/done presponse (fn [response]
+      (jq/resolve output {:originalTime time :response response})))
+    output))
+
+(defn keep-most-recently-requested [old new]
+  (if (> (:originalTime old) (:originalTime new))
+    old
+    new))
+
+((fn []
+   (let [slows     (event-list ($ :#slow) "click")
+         fasts     (event-list ($ :#fast) "click")
+         events    (concat* slows fasts)
+         summaries (mapd* time-and-id events)
+         responses (resolve-order-map* request-and-timestamp summaries)]
+   (mapd* transparent-log responses))))
 
 ; Memory leak tests
 (comment
