@@ -4,10 +4,10 @@ var http = require('http'),
     fs   = require('fs');
 
 http.createServer(function (req, res) {
-  res.writeHead(200, {'Content-Type': 'text/html'});
 
   switch(req.url) {
     case "/":
+      res.writeHead(200, {'Content-Type': 'text/html'});
       fs.readFile('resources/public/index.html', function(err, data) {
         if (err) throw err;
         res.end(data);
@@ -15,15 +15,18 @@ http.createServer(function (req, res) {
       break;
     case "/slow":
       setTimeout(function() {
+        res.writeHead(200, {'Content-Type': 'text/plain'});
         res.end('slow');
       }, 1000);
       break;
     case "/fast":
+      res.writeHead(200, {'Content-Type': 'text/plain'});
       res.end('fast');
       break;
     default:
       fs.readFile('resources/public' + req.url, function(err, data) {
         if (err) console.log(err);
+        res.writeHead(200, {'Content-Type': 'application/javascript'});
         res.end(data);
       });
       break;
