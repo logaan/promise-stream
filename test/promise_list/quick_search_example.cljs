@@ -47,8 +47,10 @@
         events    (concat* changes keyups)
         queries   (mapd* (comp :value summarise) events)
         throttled (throttle* 400 queries)
-        responses (map*  perform-search throttled)
-        groups    (mapd* group-names responses)]
+        responses (resolve-order-map* 
+                    (stamp-with-request-time perform-search) throttled)
+        filtered  (keep-most-recently-requested responses)
+        groups    (mapd* group-names filtered)]
     (mapd* set-query-title!  throttled)
     (mapd* set-results-list! groups))))
 
