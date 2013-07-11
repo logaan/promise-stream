@@ -44,14 +44,13 @@
 ((fn []
   (let [changes   (event-list ($ :#query) "change")
         keyups    (event-list ($ :#query) "keyup")
-        events    (concat* changes keyups)
+        events    (throttle* 400 (concat* changes keyups))
         queries   (mapd* (comp :value summarise) events)
-        throttled (throttle* 400 queries)
         responses (resolve-order-map* 
-                    (stamp-with-request-time perform-search) throttled)
+                    (stamp-with-request-time perform-search) queries)
         filtered  (keep-most-recently-requested responses)
         groups    (mapd* group-names filtered)]
-    (mapd* set-query-title!  throttled)
+    (mapd* set-query-title!  queries)
     (mapd* set-results-list! groups))))
 
 (defn update-latest-result [response]
