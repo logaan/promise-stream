@@ -43,15 +43,16 @@
     (mapd* set-query-title!  throttled)
     (mapd* set-results-list! groups))))
 
-(def time-and-id
-  (juxt #(.-timeStamp %) #(-> % .-currentTarget .-id)))
-
-(defn request-and-timestamp [[time id]]
-  (let [output   (jq/$deferred)
-        presponse (js/jQuery.get (str "/" id))]
+(defn stamp-with-request-time [f]
+  (fn [v]
+    (let [output        (jq/$deferred)
+          presponse     (f v)
+          original-time (.valueOf (new js/Date))]
     (jq/done presponse (fn [response]
-      (jq/resolve output {:originalTime time :response response})))
-    output))
+      (jq/resolve output {:originalTime original-time
+                          :response     response})))
+    output)))
+
 (defn update-latest-result [response]
   (jq/text ($ :#latest_result) response))
 
@@ -59,8 +60,8 @@
    (let [slows     (event-list ($ :#slow) "click")
          fasts     (event-list ($ :#fast) "click")
          events    (concat* slows fasts)
-         summaries (mapd* time-and-id events)
-         responses (resolve-order-map* request-and-timestamp summaries)
+         endpoints (mapd* #(str "/" (.-id (.-currentTarget %))) events)
+         responses (resolve-order-map* (stamp-with-request-time js/jQuery.get) endpoints)
          mrr       (keep-most-recently-requested responses)]
    (mapd* update-latest-result mrr))))
 
