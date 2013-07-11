@@ -19,7 +19,7 @@
   v)
 
 (defn perform-search [query]
-  (js/jQuery.getJSON (str "http://api.flickr.com/services/rest/?method=flickr.groups.search&api_key=a567ef852bac562934904a2a0b548a5b&text=" query "&per_page=10&format=json&jsoncallback=?")))
+  (js/jQuery.getJSON (str "http://api.flickr.com/services/rest/?method=flickr.groups.search&api_key=10b278da620908b32d4cb5e044366699&text=" query "&per_page=10&format=json&jsoncallback=?")))
 
 (defn group-names [response]
   (if-let [groups (aget response "groups")]
