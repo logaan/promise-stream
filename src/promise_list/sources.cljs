@@ -17,3 +17,9 @@
     (on element event-type (fn [event]
       (.preventDefault event)      
       (append! writer (deferred event)))))))
+
+(defn callback->promise-list [f & args]
+  (with-open-plist (fn [writer]
+    (apply f (concat args (list (fn [v]
+      (append! writer (deferred v)))))))))
+
