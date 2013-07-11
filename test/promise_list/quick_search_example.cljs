@@ -1,13 +1,11 @@
 (ns promise-list.quick-search-test
-  (:use [jayq.util            :only [log]]
-        [jayq.core            :only [$ text remove append]]
-        [promise-list.sources :only [metranome event-list]]
-        [promise-list.plist   :only
-         [closed-plist map* mapd* concat* throttle*]]
+  (:require [jayq.core :as jq]) 
+  (:use [jayq.core            :only [$]]
+        [promise-list.sources :only [event-list]]
+        [promise-list.plist   :only [mapd* concat* throttle*]]
         [promise-list.timing-aware :only
          [resolve-order-map* keep-most-recently-requested
-          stamp-with-request-time]])
-  (:require [jayq.core :as jq]))
+          stamp-with-request-time]]))
 
 (defn perform-search [query]
   (js/jQuery.getJSON
@@ -25,11 +23,11 @@
       (aget group "name"))))
 
 (defn set-query-title! [new-title]
-  (text ($ :#query-title) new-title))
+  (jq/text ($ :#query-title) new-title))
 
 (defn set-results-list! [results]
-  (remove ($ "#results li"))
-  (mapv #(append ($ :#results) (str "<li>" % "</li>")) results))
+  (jq/remove ($ "#results li"))
+  (mapv #(jq/append ($ :#results) (str "<li>" % "</li>")) results))
 
 ((fn []
   (let [changes   (event-list ($ :#query) "change")
@@ -54,25 +52,4 @@
          responses (resolve-order-map* (stamp-with-request-time js/jQuery.get) endpoints)
          mrr       (keep-most-recently-requested responses)]
    (mapd* update-latest-result mrr))))
-
-; Memory leak tests
-(comment
-  ((fn []
-     (let [threes (metranome 300)
-           fives  (metranome 500)
-           all    (concat* threes fives)
-           times  (mapd* (comp str :time) all)]
-       (mapd* set-query-title! times))))
-
-  ((fn []
-     (let [clock (metranome 200)]
-       (mapd* identity clock))))
-
-  ((js/window.setInterval (fn [] (+ 1 1)) 200)))
-
-; Stack overflow tests
-(comment
-  (mapd* (comp log :time) (metranome 1)))
-
-(comment (mapd* inc (apply closed-plist (range 1200))))
 
