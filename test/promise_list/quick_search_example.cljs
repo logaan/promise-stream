@@ -4,7 +4,9 @@
         [promise-list.sources :only [metranome event-list]]
         [promise-list.plist   :only
          [closed-plist map* mapd* concat* throttle*]]
-        [promise-list.timing-aware :only [resolve-order-map* keep-most-recently-requested]])
+        [promise-list.timing-aware :only
+         [resolve-order-map* keep-most-recently-requested
+          stamp-with-request-time]])
   (:require [jayq.core :as jq]))
 
 (defn summarise [event]
@@ -19,7 +21,14 @@
   v)
 
 (defn perform-search [query]
-  (js/jQuery.getJSON (str "http://api.flickr.com/services/rest/?method=flickr.groups.search&api_key=10b278da620908b32d4cb5e044366699&text=" query "&per_page=10&format=json&jsoncallback=?")))
+  (js/jQuery.getJSON
+    (str "http://api.flickr.com/services/rest/"
+         "?method="       "flickr.groups.search"
+         "&api_key="      "10b278da620908b32d4cb5e044366699"
+         "&text="         query
+         "&per_page="     10
+         "&format="       "json"
+         "&jsoncallback=" "?")))
 
 (defn group-names [response]
   (if-let [groups (aget response "groups")]
@@ -42,16 +51,6 @@
         groups    (mapd* group-names responses)]
     (mapd* set-query-title!  throttled)
     (mapd* set-results-list! groups))))
-
-(defn stamp-with-request-time [f]
-  (fn [v]
-    (let [output        (jq/$deferred)
-          presponse     (f v)
-          original-time (.valueOf (new js/Date))]
-    (jq/done presponse (fn [response]
-      (jq/resolve output {:originalTime original-time
-                          :response     response})))
-    output)))
 
 (defn update-latest-result [response]
   (jq/text ($ :#latest_result) response))

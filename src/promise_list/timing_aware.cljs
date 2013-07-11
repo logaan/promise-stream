@@ -16,6 +16,16 @@
     (co-operative-close (count* coll) writer (fn [close]
     (traverse coll (resolve-order-modifying-appender writer f close) identity))))))
 
+(defn stamp-with-request-time [f]
+  (fn [v]
+    (let [output        (jq/$deferred)
+          presponse     (f v)
+          original-time (.valueOf (new js/Date))]
+    (jq/done presponse (fn [response]
+      (jq/resolve output {:originalTime original-time
+                          :response     response})))
+    output)))
+
 (defn most-recently-requested-with-current [{mrr :mrr} current]
   (if (< (:originalTime mrr) (:originalTime current))
     {:mrr current :current current}
