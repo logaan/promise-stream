@@ -9,17 +9,6 @@
           stamp-with-request-time]])
   (:require [jayq.core :as jq]))
 
-(defn summarise [event]
-  (let [target (aget event "target")]
-    {:type   (aget event "type")
-     :time   (aget event "timeStamp")
-     :target target
-     :value  (aget target "value")}))
-
-(defn transparent-log [v]
-  (log (clj->js v))
-  v)
-
 (defn perform-search [query]
   (js/jQuery.getJSON
     (str "http://api.flickr.com/services/rest/"
@@ -32,7 +21,8 @@
 
 (defn group-names [response]
   (if-let [groups (aget response "groups")]
-    (map #(aget % "name") (aget groups "group"))))
+    (for [group (aget groups "group")]
+      (aget group "name"))))
 
 (defn set-query-title! [new-title]
   (text ($ :#query-title) new-title))
@@ -45,7 +35,7 @@
   (let [changes   (event-list ($ :#query) "change")
         keyups    (event-list ($ :#query) "keyup")
         events    (throttle* 400 (concat* changes keyups))
-        queries   (mapd* (comp :value summarise) events)
+        queries   (mapd* #(.-value (.-target %)) events)
         responses (resolve-order-map* 
                     (stamp-with-request-time perform-search) queries)
         filtered  (keep-most-recently-requested responses)
