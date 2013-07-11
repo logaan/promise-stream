@@ -3,7 +3,8 @@
         [jayq.core            :only [$ text remove append]]
         [promise-list.sources :only [metranome event-list]]
         [promise-list.plist   :only
-         [closed-plist map* mapd* concat* throttle* resolve-order-map*]])
+         [closed-plist map* mapd* concat* throttle* resolve-order-map*
+          reductions* fmap promise filter*]])
   (:require [jayq.core :as jq]))
 
 (defn summarise [event]
@@ -52,18 +53,34 @@
       (jq/resolve output {:originalTime time :response response})))
     output))
 
-(defn keep-most-recently-requested [old new]
-  (if (> (:originalTime old) (:originalTime new))
-    old
-    new))
+(defn most-recently-requested-with-current [{mrr :mrr} current]
+  (if (< (:originalTime mrr) (:originalTime current))
+    {:mrr current :current current}
+    {:mrr mrr     :current current}))
+
+(defn most-recently-requested? [{:keys [mrr current]}]
+  (promise (= mrr current)))
+
+(defn strip-mrr-and-times [mrr-and-current]
+  (-> mrr-and-current :current :response))
+
+(defn keep-most-recently-requested [times-and-responses-coll]
+  (mapd* strip-mrr-and-times
+         (filter* most-recently-requested?
+                  (reductions* times-and-responses-coll
+                               (fmap most-recently-requested-with-current)
+                               (promise {:mrr {:originalTime 0}})))))
+(defn update-latest-result [response]
+  (jq/text ($ :#latest_result) response))
 
 ((fn []
    (let [slows     (event-list ($ :#slow) "click")
          fasts     (event-list ($ :#fast) "click")
          events    (concat* slows fasts)
          summaries (mapd* time-and-id events)
-         responses (resolve-order-map* request-and-timestamp summaries)]
-   (mapd* transparent-log responses))))
+         responses (resolve-order-map* request-and-timestamp summaries)
+         mrr       (keep-most-recently-requested responses)]
+   (mapd* update-latest-result mrr))))
 
 ; Memory leak tests
 (comment

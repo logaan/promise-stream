@@ -188,6 +188,7 @@
 
 ; Should this be emitting the first value?
 (defn reductions*
+  "Calls f with two promises and expects f to return a promise."
   ([coll f]
    (reductions* (rest coll) f (first coll)))
   ([coll f start]
