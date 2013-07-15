@@ -192,6 +192,13 @@
          (close! writer)
          (reductions* writer dtail f dresult)))))))
 
+(defn dorun* [plist]
+  (reduce (fn [_ _] (jq/$deferred)) plist)
+  nil)
+
+(defn doall* [plist]
+  (reduce (fmap conj) (promise []) plist))
+
 (def plist-m
   {:return closed-plist
    :bind   #(mapcat* %2 %1)

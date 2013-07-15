@@ -4,7 +4,8 @@
         [promise-list.plist :only
          [closed-plist open-plist append! close! reduce* map* mapd* concat*
           with-open-plist mapcat* count* resolves-within?
-          pairwise-traverse zip* promise fmap filter* rests* reductions*]])
+          pairwise-traverse zip* promise fmap filter* rests* reductions* doall*
+          dorun*]])
   (:require [jayq.core :as jq]
             [promise-list.pcell :as pc]
             [clojure.core.reducers :as r]))
@@ -126,11 +127,17 @@
   #(assert (= 10 %)))
 
 (jq/done
-  (r/reduce (pc/dapply +)
+  (reduce (pc/dapply +)
             (r/map (pc/dapply inc)
                    (r/map (pc/dapply inc)
                           (closed-plist 1 2 3 4))))
   #(assert (= 18 %)))
+
+(assert (nil? (dorun* (r/map (pc/dapply inc) (closed-plist 1 2 3 4)))))
+
+(jq/done
+  (doall* (r/map (pc/dapply inc) (closed-plist 1 2 3 4)))
+  #(assert (= [2 3 4 5] %)))
 
 ; Macros
 (jq/done
