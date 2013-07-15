@@ -1,5 +1,8 @@
 # promise-list
 
+_"What happens when an unblockable force meets an immutable object" - Lyndon
+Maydwell_
+
 A promise list serves the same purpose as a blocking lazy sequence. Javascript
 code may not block and so an asynchronous alternative is required.
 
