@@ -20,6 +20,6 @@
 
 (defn callback->promise-stream [f & args]
   (with-open-pstream (fn [writer]
-    (apply f (concat args (stream (fn [v]
+    (apply f (concat args (list (fn [v]
       (append! writer (deferred v)))))))))
 

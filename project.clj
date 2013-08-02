@@ -1,4 +1,4 @@
-(defproject promise-stream "0.1.0"
+(defproject promise-stream "0.1.0-SNAPSHOT"
   :description "A promise stream serves the same purpose as a blocking lazy
                sequence. Javascript code may not block and so an asynchronous
                alternative is required."
