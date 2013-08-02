@@ -1,13 +1,13 @@
 ;; This walkthrough introduces the core concepts of promise lists.
 
-;; The promise-list.plist namespace contains the public API.
-(ns promise-list.walkthrough
-  (:use [promise-list.plist :only
+;; The promise-stream.plist namespace contains the public API.
+(ns promise-stream.walkthrough
+  (:use [promise-stream.plist :only
          [open-plist closed-plist append! promise close! fmap mapd* map*]]
         [jayq.core :only [done]]
         [jayq.util :only [log]])
   (:require [clojure.core.reducers :as r])
-  (:use-macros [promise-list.macros :only [for-plist]]))
+  (:use-macros [promise-stream.macros :only [for-plist]]))
 
 ;; Promise lists are used to represent sequences of data that may not exist
 ;; yet. They serve the same purpose as blocking lazy sequences in Clojure.
@@ -81,7 +81,7 @@
   ;; promise objects. We use it here because map passes the mapping function
   ;; promises and expects new ones to be returned.
 
-  ;; Unfortunately the promise-lists can't let a funciton like `map` know when
+  ;; Unfortunately the promise-streams can't let a funciton like `map` know when
   ;; it's hit the end of a the list using just the `ISeq` protocol. If you try
   ;; to use `reduce` on a lazy-seq returned by `map` then you'll get an
   ;; infinite loop:
@@ -98,7 +98,7 @@
   ;; through `inc`.
 
   ;; It's somewhat inconvenient to use the reducers as they must always end in
-  ;; a call to reduce. So promise-list has convenience versions of common
+  ;; a call to reduce. So promise-stream has convenience versions of common
   ;; sequence functions defined that will terminate correctly. Here we use
   ;; mapd* which automaticlaly wraps your return value in a promise:
 

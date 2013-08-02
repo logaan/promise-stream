@@ -1,6 +1,6 @@
-(ns promise-list.macros
+(ns promise-stream.macros
   (:use jayq.macros))
 
 (defmacro for-plist [steps & body]
-  `(do-> promise-list.plist/plist-m ~steps ~@body))
+  `(do-> promise-stream.plist/plist-m ~steps ~@body))
 

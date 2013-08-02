@@ -1,5 +1,5 @@
-(ns promise-list.plist
-  (:require [promise-list.pcell :as pc]
+(ns promise-stream.plist
+  (:require [promise-stream.pcell :as pc]
             [jayq.core :as jq]))
 
 ; Misleading as it's just returning a resolved deferred.

@@ -1,13 +1,13 @@
-(ns promise-list.plist-test
-  (:use-macros [promise-list.macros :only [for-plist]])
+(ns promise-stream.plist-test
+  (:use-macros [promise-stream.macros :only [for-plist]])
   (:use [jayq.util :only [log]] 
-        [promise-list.plist :only
+        [promise-stream.plist :only
          [closed-plist open-plist append! close! reduce* map* mapd* concat*
           with-open-plist mapcat* count* resolves-within?
           pairwise-traverse zip* promise fmap filter* rests* reductions* doall*
           dorun*]])
   (:require [jayq.core :as jq]
-            [promise-list.pcell :as pc]
+            [promise-stream.pcell :as pc]
             [clojure.core.reducers :as r]))
 
 ; plist

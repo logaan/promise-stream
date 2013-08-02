@@ -1,4 +1,4 @@
-(ns promise-list.pcell
+(ns promise-stream.pcell
   (:require [jayq.core :as jq]))
 
 (defn deferred [value]

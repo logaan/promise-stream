@@ -1,4 +1,4 @@
-(ns promise-list.util
+(ns promise-stream.util
    (:use [jayq.util :only [log]]))
 
 (defn transparent-log [v]

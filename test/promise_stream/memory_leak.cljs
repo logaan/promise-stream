@@ -1,4 +1,4 @@
-(ns promise-list.memory-leak)
+(ns promise-stream.memory-leak)
 
 ; Memory leak tests
 (comment

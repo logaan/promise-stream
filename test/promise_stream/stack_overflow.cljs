@@ -1,4 +1,4 @@
-(ns promise-list.stack-overflow)
+(ns promise-stream.stack-overflow)
 
 (comment
   (mapd* (comp log :time) (metranome 1)))

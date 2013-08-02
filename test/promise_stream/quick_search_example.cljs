@@ -1,9 +1,9 @@
-(ns promise-list.quick-search-test
+(ns promise-stream.quick-search-test
   (:require [jayq.core :as jq]) 
   (:use [jayq.core            :only [$]]
-        [promise-list.sources :only [event-list]]
-        [promise-list.plist   :only [mapd* concat* throttle*]]
-        [promise-list.timing-aware :only
+        [promise-stream.sources :only [event-list]]
+        [promise-stream.plist   :only [mapd* concat* throttle*]]
+        [promise-stream.timing-aware :only
          [resolve-order-map* keep-most-recently-requested
           stamp-with-request-time]]))
 

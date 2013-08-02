@@ -1,6 +1,6 @@
-(ns promise-list.timing-aware-test
-  (:use [promise-list.plist :only [closed-plist]]
-        [promise-list.timing-aware :only [resolve-order-map*]])
+(ns promise-stream.timing-aware-test
+  (:use [promise-stream.plist :only [closed-plist]]
+        [promise-stream.timing-aware :only [resolve-order-map*]])
   (:require [jayq.core :as jq]))
 
 (let [responses (->> (closed-plist "/slow" "/fast")

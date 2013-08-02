@@ -1,5 +1,5 @@
-(ns promise-list.timing-aware
-  (:use [promise-list.plist :only
+(ns promise-stream.timing-aware
+  (:use [promise-stream.plist :only
          [with-open-plist co-operative-close count* traverse closed-plist map*
           mapd* concat* throttle* reductions* fmap promise
           filter* append!]])

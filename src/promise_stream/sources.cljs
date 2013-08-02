@@ -1,7 +1,7 @@
-(ns promise-list.sources
+(ns promise-stream.sources
   (:use [jayq.core          :only [on val]]
-        [promise-list.pcell :only [deferred]]
-        [promise-list.plist :only [with-open-plist append!]]))
+        [promise-stream.pcell :only [deferred]]
+        [promise-stream.plist :only [with-open-plist append!]]))
 
 (defn timestamp []
   (.valueOf (js/Date.)))
@@ -18,7 +18,7 @@
       (.preventDefault event)      
       (append! writer (deferred event)))))))
 
-(defn callback->promise-list [f & args]
+(defn callback->promise-stream [f & args]
   (with-open-plist (fn [writer]
     (apply f (concat args (list (fn [v]
       (append! writer (deferred v)))))))))

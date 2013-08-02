@@ -1,5 +1,5 @@
-(ns promise-list.pcell-test
-  (:use [promise-list.pcell :only [closed-cell empty-cell pcell done]])
+(ns promise-stream.pcell-test
+  (:use [promise-stream.pcell :only [closed-cell empty-cell pcell done]])
   (:require [jayq.core :as jq]))
 
 ; first
