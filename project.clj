@@ -8,6 +8,7 @@
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [jayq "2.3.0"]]
   :plugins [[lein-cljsbuild "0.3.0"]] 
+  :jar-exclusions  [#"\.(js|html|gitkeep)$"]
   :cljsbuild {
     :builds {
       :dev {:source-paths ["src" "test"]
