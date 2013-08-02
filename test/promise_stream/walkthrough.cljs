@@ -1,4 +1,4 @@
-;; This walkthrough introduces the core concepts of promise lists.
+;; This walkthrough introduces the core concepts of promise streams.
 
 ;; The promise-stream.pstream namespace contains the public API.
 (ns promise-stream.walkthrough
@@ -9,11 +9,11 @@
   (:require [clojure.core.reducers :as r])
   (:use-macros [promise-stream.macros :only [for-pstream]]))
 
-;; Promise lists are used to represent sequences of data that may not exist
+;; Promise streams are used to represent sequences of data that may not exist
 ;; yet. They serve the same purpose as blocking lazy sequences in Clojure.
 ;; Javascript does not have threads and so you can not block.
 
-;; A promise list can be created using `open-pstream`. This will return a reader
+;; A promise stream can be created using `open-pstream`. This will return a reader
 ;; and writer. The reader is purely functional and may be safely passed to
 ;; consumer code.
 
@@ -29,16 +29,16 @@
 
   (append! writer (promise "puppies"))
 
-  ;; Promises may then be read from the list:
+  ;; Promises may then be read from the stream:
 
   (done (first reader) #(assert (= "puppies" %)))
 
-  ;; Reading a promise does not consume it, or mutate the list in any way. We
+  ;; Reading a promise does not consume it, or mutate the stream in any way. We
   ;; can ask the same question and receive the same answer:
 
   (done (first reader) #(assert (= "puppies" %)))
 
-  ;; Promises may be pulled from beyond the end of the list:
+  ;; Promises may be pulled from beyond the end of the stream:
 
   (done (nth reader 1) #(assert (= "ducklings" %)))
 
@@ -46,18 +46,18 @@
 
   (append! writer (promise "ducklings"))
 
-  ;; Promise lists are able to represent a finite list of values, and so are
+  ;; Promise streams are able to represent a finite stream of values, and so are
   ;; able to be closed.
 
   (close! writer)
 
-  ;; You can still request values beyond the end of the list, but those values
-  ;; will be nil (just like with a normal list or vector):
+  ;; You can still request values beyond the end of the stream, but those values
+  ;; will be nil (just like with a normal stream or vector):
 
   (done (nth reader 2) #(assert (nil? %)))
 
-  ;; It is possible for a promise list to be closed before producing any
-  ;; values, representing an empty list.
+  ;; It is possible for a promise stream to be closed before producing any
+  ;; values, representing an empty stream.
 
   ;; If you know all of your values ahead of time you may create a
   ;; closed-pstream. This is useful for testing and for functions like mapcat*
@@ -82,7 +82,7 @@
   ;; promises and expects new ones to be returned.
 
   ;; Unfortunately the promise-streams can't let a funciton like `map` know when
-  ;; it's hit the end of a the list using just the `ISeq` protocol. If you try
+  ;; it's hit the end of a the stream using just the `ISeq` protocol. If you try
   ;; to use `reduce` on a lazy-seq returned by `map` then you'll get an
   ;; infinite loop:
 
@@ -104,7 +104,7 @@
 
   (done (first (mapd* inc (closed-pstream 1 2 3 4))) #(assert (= 2 %)))
 
-  ;; Finally there is a `for` like macro that will work across promise lists.
+  ;; Finally there is a `for` like macro that will work across promise streams.
   
   (done
     (reduce (fmap conj) (promise [])

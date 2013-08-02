@@ -1,7 +1,7 @@
 (ns promise-stream.quick-search-test
   (:require [jayq.core :as jq]) 
   (:use [jayq.core            :only [$]]
-        [promise-stream.sources :only [event-list]]
+        [promise-stream.sources :only [event-stream]]
         [promise-stream.pstream   :only [mapd* concat* throttle*]]
         [promise-stream.timing-aware :only
          [resolve-order-map* keep-most-recently-requested
@@ -25,13 +25,13 @@
 (defn set-query-title! [new-title]
   (jq/text ($ :#query-title) new-title))
 
-(defn set-results-list! [results]
+(defn set-results-stream! [results]
   (jq/remove ($ "#results li"))
   (mapv #(jq/append ($ :#results) (str "<li>" % "</li>")) results))
 
 ((fn []
-  (let [changes   (event-list ($ :#query) "change")
-        keyups    (event-list ($ :#query) "keyup")
+  (let [changes   (event-stream ($ :#query) "change")
+        keyups    (event-stream ($ :#query) "keyup")
         events    (throttle* 400 (concat* changes keyups))
         queries   (mapd* #(.-value (.-target %)) events)
         responses (resolve-order-map* 
@@ -39,14 +39,14 @@
         filtered  (keep-most-recently-requested responses)
         groups    (mapd* group-names filtered)]
     (mapd* set-query-title!  queries)
-    (mapd* set-results-list! groups))))
+    (mapd* set-results-stream! groups))))
 
 (defn update-latest-result [response]
   (jq/text ($ :#latest_result) response))
 
 ((fn []
-   (let [slows     (event-list ($ :#slow) "click")
-         fasts     (event-list ($ :#fast) "click")
+   (let [slows     (event-stream ($ :#slow) "click")
+         fasts     (event-stream ($ :#fast) "click")
          events    (concat* slows fasts)
          endpoints (mapd* #(str "/" (.-id (.-currentTarget %))) events)
          responses (resolve-order-map* (stamp-with-request-time js/jQuery.get) endpoints)

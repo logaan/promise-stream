@@ -9,7 +9,7 @@
 (def fmap pc/dapply)
 
 (defn closed-pstream
-  "Returns a read only promise list containing args. Mapping directly over a
+  "Returns a read only promise stream containing args. Mapping directly over a
   closed pstream will cause a stack overflow if it contains more than 1k values."
   [& args]
   (reduce #(pc/closed-cell %2 %1) (pc/empty-cell) (reverse args)))
@@ -55,7 +55,7 @@
 ; Can probably abstract away the variable column thing
 (defn traverse
   "vf will be called with every value. ef will be called at the end of the
-  list."
+  stream."
   ([coll vf ef]
    (pc/done coll (fn [cell]
      (if (empty? cell)
@@ -78,7 +78,7 @@
     reader))
 
 ; These three generate functions to avoid having them close over the heads of
-; lists and cause a memory leak.
+; streams and cause a memory leak.
 (defn modifying-appender [writer f]
   (fn [v] (append! writer (f v))))
 
@@ -119,10 +119,10 @@
 (defn mapcat* [f coll]
   (with-open-pstream (fn [writer]
     (co-operative-close (count* coll) writer (fn [close]
-      (let [list-of-lists  (map* (comp pc/deferred f) coll)]
-        (map* (fn [inner-list]
-                (traverse inner-list (modifying-appender writer pc/deferred) close))
-              list-of-lists)))))))
+      (let [stream-of-streams  (map* (comp pc/deferred f) coll)]
+        (map* (fn [inner-stream]
+                (traverse inner-stream (modifying-appender writer pc/deferred) close))
+              stream-of-streams)))))))
 
 ; Exists to avoid closing over coll
 (defn pair-adder [writer]

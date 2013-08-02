@@ -24,7 +24,7 @@
       #(assert (= 3 (first three-onwards))))))))
 
 (let [pstream          (closed-cell 1 (empty-cell))
-      list-beyond-end  (rest (rest pstream))
-      value-beyond-end (first list-beyond-end)]
-  (done    list-beyond-end  #(assert (empty? %)))
+      stream-beyond-end  (rest (rest pstream))
+      value-beyond-end (first stream-beyond-end)]
+  (done    stream-beyond-end  #(assert (empty? %)))
   (jq/done value-beyond-end #(assert (nil? %))))

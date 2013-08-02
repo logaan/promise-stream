@@ -12,7 +12,7 @@
       #(append! writer (deferred {:time (timestamp)}))
       interval))))
 
-(defn event-list [element event-type]
+(defn event-stream [element event-type]
   (with-open-pstream (fn [writer]
     (on element event-type (fn [event]
       (.preventDefault event)      
@@ -20,6 +20,6 @@
 
 (defn callback->promise-stream [f & args]
   (with-open-pstream (fn [writer]
-    (apply f (concat args (list (fn [v]
+    (apply f (concat args (stream (fn [v]
       (append! writer (deferred v)))))))))
 
