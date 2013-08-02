@@ -40,6 +40,10 @@ http.createServer(function (req, res) {
 
       break;
 
+    case "/favicon.ico":
+      res.end("");
+      break;
+
     default:
       fs.readFile('resources/public' + req.url, function(err, data) {
         if (err) console.log(err);
