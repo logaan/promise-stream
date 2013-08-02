@@ -1,6 +1,6 @@
 (ns promise-stream.timing-aware
-  (:use [promise-stream.plist :only
-         [with-open-plist co-operative-close count* traverse closed-plist map*
+  (:use [promise-stream.pstream :only
+         [with-open-pstream co-operative-close count* traverse closed-pstream map*
           mapd* concat* throttle* reductions* fmap promise
           filter* append!]])
   (:require [jayq.core :as jq]))
@@ -12,7 +12,7 @@
       (close)))))
 
 (defn resolve-order-map* [f coll]
-  (with-open-plist (fn [writer]
+  (with-open-pstream (fn [writer]
     (co-operative-close (count* coll) writer (fn [close]
     (traverse coll (resolve-order-modifying-appender writer f close) identity))))))
 

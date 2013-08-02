@@ -2,7 +2,7 @@
   (:require [jayq.core :as jq]) 
   (:use [jayq.core            :only [$]]
         [promise-stream.sources :only [event-list]]
-        [promise-stream.plist   :only [mapd* concat* throttle*]]
+        [promise-stream.pstream   :only [mapd* concat* throttle*]]
         [promise-stream.timing-aware :only
          [resolve-order-map* keep-most-recently-requested
           stamp-with-request-time]]))

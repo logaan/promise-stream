@@ -1,25 +1,25 @@
 ;; This walkthrough introduces the core concepts of promise lists.
 
-;; The promise-stream.plist namespace contains the public API.
+;; The promise-stream.pstream namespace contains the public API.
 (ns promise-stream.walkthrough
-  (:use [promise-stream.plist :only
-         [open-plist closed-plist append! promise close! fmap mapd* map*]]
+  (:use [promise-stream.pstream :only
+         [open-pstream closed-pstream append! promise close! fmap mapd* map*]]
         [jayq.core :only [done]]
         [jayq.util :only [log]])
   (:require [clojure.core.reducers :as r])
-  (:use-macros [promise-stream.macros :only [for-plist]]))
+  (:use-macros [promise-stream.macros :only [for-pstream]]))
 
 ;; Promise lists are used to represent sequences of data that may not exist
 ;; yet. They serve the same purpose as blocking lazy sequences in Clojure.
 ;; Javascript does not have threads and so you can not block.
 
-;; A promise list can be created using `open-plist`. This will return a reader
+;; A promise list can be created using `open-pstream`. This will return a reader
 ;; and writer. The reader is purely functional and may be safely passed to
 ;; consumer code.
 
-(let [[reader writer] (open-plist)]
+(let [[reader writer] (open-pstream)]
 
-  ;; An open plist may have promises appended to the end of it. This allows for
+  ;; An open pstream may have promises appended to the end of it. This allows for
   ;; the ordering of events that have not yet occurred, such as ajax responses:
 
   ;; (append! writer (js/jQuery.get "/kittens"))
@@ -60,12 +60,12 @@
   ;; values, representing an empty list.
 
   ;; If you know all of your values ahead of time you may create a
-  ;; closed-plist. This is useful for testing and for functions like mapcat*
-  ;; that expect a plist.
+  ;; closed-pstream. This is useful for testing and for functions like mapcat*
+  ;; that expect a pstream.
 
-  (done (first (closed-plist "owlet")) #(assert (= "owlet" %)))
+  (done (first (closed-pstream "owlet")) #(assert (= "owlet" %)))
 
-  ;; We've been able to use `first` and `nth` because plists implement the
+  ;; We've been able to use `first` and `nth` because pstreams implement the
   ;; `ISeq` protocol. This also gives us collection operations like map and
   ;; reduce.
 
@@ -86,11 +86,11 @@
   ;; to use `reduce` on a lazy-seq returned by `map` then you'll get an
   ;; infinite loop:
 
-  ;;  (reduce (fmap +) (map (fmap inc) (closed-plist 1 2 3 4)))
+  ;;  (reduce (fmap +) (map (fmap inc) (closed-pstream 1 2 3 4)))
 
   ;; So you must instead use the reducers library's version of map:
 
-  (done (reduce (fmap +) (r/map (fmap inc) (closed-plist 1 2 3 4)))
+  (done (reduce (fmap +) (r/map (fmap inc) (closed-pstream 1 2 3 4)))
         #(assert (= 14 %)))
 
   ;; This works because the reducers version of map gets passed `+` and returns
@@ -102,15 +102,15 @@
   ;; sequence functions defined that will terminate correctly. Here we use
   ;; mapd* which automaticlaly wraps your return value in a promise:
 
-  (done (first (mapd* inc (closed-plist 1 2 3 4))) #(assert (= 2 %)))
+  (done (first (mapd* inc (closed-pstream 1 2 3 4))) #(assert (= 2 %)))
 
   ;; Finally there is a `for` like macro that will work across promise lists.
   
   (done
     (reduce (fmap conj) (promise [])
-            (for-plist [a (closed-plist 1 2 3)
-                        b (closed-plist 4 5 6)
-                        v (closed-plist a b)]
+            (for-pstream [a (closed-pstream 1 2 3)
+                        b (closed-pstream 4 5 6)
+                        v (closed-pstream a b)]
                        v))
     #(assert (= [1, 4, 1, 5, 1, 6, 2, 4, 2, 5, 2, 6, 3, 4, 3, 5, 3, 6] %)))
   

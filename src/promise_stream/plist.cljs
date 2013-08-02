@@ -1,16 +1,16 @@
-(ns promise-stream.plist
+(ns promise-stream.pstream
   (:require [promise-stream.pcell :as pc]
             [jayq.core :as jq]))
 
 ; Misleading as it's just returning a resolved deferred.
 (def promise pc/deferred)
 
-; Misleading as it's fmap within the promise domain, not plist.
+; Misleading as it's fmap within the promise domain, not pstream.
 (def fmap pc/dapply)
 
-(defn closed-plist
+(defn closed-pstream
   "Returns a read only promise list containing args. Mapping directly over a
-  closed plist will cause a stack overflow if it contains more than 1k values."
+  closed pstream will cause a stack overflow if it contains more than 1k values."
   [& args]
   (reduce #(pc/closed-cell %2 %1) (pc/empty-cell) (reverse args)))
 
@@ -35,10 +35,10 @@
        (reduce* response coll f start)
        response))))
 
-(defn open-plist [& values]
+(defn open-pstream [& values]
   (let [tail  (pc/open-container)
-        plist (reduce #(pc/closed-cell %2 %1) tail values)]
-    (list plist (atom tail))))
+        pstream (reduce #(pc/closed-cell %2 %1) tail values)]
+    (list pstream (atom tail))))
 
 (defn append! [writer dvalue]
   (let [current-tail @writer
@@ -72,8 +72,8 @@
             (vf (first cell1) (first cell2))
             (traverse (rest coll1) (rest coll2) vf ef)))))))))
 
-(defn with-open-plist [f]
-  (let [[reader writer] (open-plist)]
+(defn with-open-pstream [f]
+  (let [[reader writer] (open-pstream)]
     (f writer)
     reader))
 
@@ -86,7 +86,7 @@
   (fn [] (close! writer)))
 
 (defn map* [f coll]
-  (with-open-plist (fn [writer]
+  (with-open-pstream (fn [writer]
     (traverse coll (modifying-appender writer f) (closer writer)))))
 
 (defn mapd* [f coll]
@@ -107,7 +107,7 @@
   (callback close-function)))
 
 (defn concat* [& colls]
-  (with-open-plist (fn [writer]
+  (with-open-pstream (fn [writer]
     (co-operative-close (pc/deferred (count colls)) writer (fn [close]
       (doall
         (map (fn [coll] (traverse coll (modifying-appender writer pc/deferred) close))
@@ -117,7 +117,7 @@
   (reduce (pc/dapply (fn [tally v] (inc tally))) (pc/deferred 0) coll))
 
 (defn mapcat* [f coll]
-  (with-open-plist (fn [writer]
+  (with-open-pstream (fn [writer]
     (co-operative-close (count* coll) writer (fn [close]
       (let [list-of-lists  (map* (comp pc/deferred f) coll)]
         (map* (fn [inner-list]
@@ -130,7 +130,7 @@
     (append! writer (promise (list v1 v2)))))
 
 (defn zip* [coll1 coll2]
-  (with-open-plist (fn [writer]
+  (with-open-pstream (fn [writer]
     (traverse coll1 coll2 (pair-adder writer) (closer writer)))))
 
 ; Exists to avoid closing over coll
@@ -140,17 +140,17 @@
       (if passes? (append! writer (promise v)))))))
 
 (defn filter*
-  "returns a new plist of values from coll for which pred returns truthy. pred
-  must take a concrete value and return a promise. coll is a plist."
+  "returns a new pstream of values from coll for which pred returns truthy. pred
+  must take a concrete value and return a promise. coll is a pstream."
   [pred coll]
-  (with-open-plist (fn [writer]
+  (with-open-pstream (fn [writer]
     (traverse coll (conditional-adder pred writer) (closer writer)))))
 
 (defn rests*
-  "Returns a plist containing coll, followed by (rest coll) then (rest (rest
+  "Returns a pstream containing coll, followed by (rest coll) then (rest (rest
   coll)) etc."
   ([coll]
-   (with-open-plist (fn [writer]
+   (with-open-pstream (fn [writer]
      (append! writer (promise coll))
      (rests* writer coll))))
   ([writer coll]
@@ -161,10 +161,10 @@
          (append! writer (promise tail))
          (rests* writer tail)))))))
 
-(defn resolves-within? [timeout plist]
+(defn resolves-within? [timeout pstream]
   (let [result (jq/$deferred)]
     (js/setTimeout #(jq/resolve result false) timeout)
-    (pc/done plist #(jq/resolve result true))
+    (pc/done pstream #(jq/resolve result true))
     result))
 
 ; Exists to avoid closing voer coll
@@ -181,7 +181,7 @@
   ([coll f]
    (reductions* (rest coll) f (first coll)))
   ([coll f start]
-   (with-open-plist (fn [writer]
+   (with-open-pstream (fn [writer]
      (reductions* writer coll f start))))
   ([writer coll f daccumulator]
    (let [dresult (f daccumulator (first coll))
@@ -192,15 +192,15 @@
          (close! writer)
          (reductions* writer dtail f dresult)))))))
 
-(defn dorun* [plist]
-  (reduce (fn [_ _] (jq/$deferred)) plist)
+(defn dorun* [pstream]
+  (reduce (fn [_ _] (jq/$deferred)) pstream)
   nil)
 
-(defn doall* [plist]
-  (reduce (fmap conj) (promise []) plist))
+(defn doall* [pstream]
+  (reduce (fmap conj) (promise []) pstream))
 
-(def plist-m
-  {:return closed-plist
+(def pstream-m
+  {:return closed-pstream
    :bind   #(mapcat* %2 %1)
    :zero   identity})
 
