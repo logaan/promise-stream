@@ -105,7 +105,7 @@
 
 (jq/done
   (reduce (fmap conj) (promise [])
-          (reductions* (closed-pstream 1 2 3 4) (fmap +)))
+          (reductions* (fmap +) (closed-pstream 1 2 3 4)))
   #(assert (= [3 6 10] %)))
 
 ; Reducers

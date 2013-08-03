@@ -40,7 +40,7 @@
 (defn keep-most-recently-requested [times-and-responses-coll]
   (mapd* strip-mrr-and-times
          (filter* most-recently-requested?
-                  (reductions* times-and-responses-coll
-                               (fmap most-recently-requested-with-current)
-                               (promise {:mrr {:originalTime 0}})))))
+                  (reductions* (fmap most-recently-requested-with-current)
+                               (promise {:mrr {:originalTime 0}})
+                               times-and-responses-coll))))
 

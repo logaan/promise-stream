@@ -178,19 +178,19 @@
 ; Should this be emitting the first value?
 (defn reductions*
   "Calls f with two promises and expects f to return a promise."
-  ([coll f]
-   (reductions* (rest coll) f (first coll)))
-  ([coll f start]
+  ([f coll]
+   (reductions* f (first coll) (rest coll)))
+  ([f start coll]
    (with-open-pstream (fn [writer]
-     (reductions* writer coll f start))))
-  ([writer coll f daccumulator]
+     (reductions* writer f start coll))))
+  ([writer f daccumulator coll]
    (let [dresult (f daccumulator (first coll))
          dtail   (rest coll)]
      (append! writer dresult)
      (pc/done dtail (fn [tail]
        (if (empty? tail)
          (close! writer)
-         (reductions* writer dtail f dresult)))))))
+         (reductions* writer f dresult dtail)))))))
 
 (defn dorun* [pstream]
   (reduce (fn [_ _] (jq/$deferred)) pstream)
