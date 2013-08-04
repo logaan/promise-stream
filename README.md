@@ -35,15 +35,11 @@ repl, or a watcher that will automatically build.
 
 ## Roadmap
 
-* Add a function that will take a function that takes a callback and has it
-  return a promise stream with all of the values passed to the callback. Like
-  `(pstreamify jayq/on ($ :button) "click")`.
-* Add to the quick search example rate limits on typed characters and order
-  limits on rendering of results.
-* Figure out how failures propogate.
-* Replace calls to jQuery deferred objects with protocol methods instead.
-* Make sure that deferred objects aren't leaked. Instead expose promise
-  objects. Only keep the original deferred object for open plsits.
+* Wrap pcells in some protocols and have everything hit them through those.
+* Switch from jayq deferreds to google closure deferreds.
+* Setup propper failure propogation.
+* Look into making the sequences more lazy with some consumer producer
+  coordination.
 
 ## License
 
