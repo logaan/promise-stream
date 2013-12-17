@@ -46,3 +46,7 @@ repl, or a watcher that will automatically build.
 Copyright © 2013 Logan Campbell
 
 Distributed under the Eclipse Public License, the same as Clojure.
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/logaan/promise-stream/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
